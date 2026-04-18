@@ -109,6 +109,12 @@
     .category-badge.معالم { background: #4d0033; color: #ffaadd; }
     .category-badge.ألغاز { background: #1a0033; color: #cc99ff; }
     .category-badge.معلومات { background: #003333; color: #99ffff; }
+    .category-badge.متنوع { background: #333333; color: #cccccc; }
+    
+    /* شريط البحث والتصفية */
+    .filter-bar { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+    .filter-bar input, .filter-bar select { padding: 12px 16px; background: #0a0000; border: 1px solid #333; border-radius: 12px; color: white; font-family: 'Cairo', sans-serif; }
+    .filter-bar input { flex: 1; min-width: 200px; }
     
     /* مودال */
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.95); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
@@ -117,11 +123,6 @@
     .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
     .modal-title { font-size: 22px; font-weight: 700; }
     .modal-close { background: none; border: none; color: #aaa; font-size: 28px; cursor: pointer; }
-    
-    /* شريط البحث والتصفية */
-    .filter-bar { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
-    .filter-bar input, .filter-bar select { padding: 12px 16px; background: #0a0000; border: 1px solid #333; border-radius: 12px; color: white; font-family: 'Cairo', sans-serif; }
-    .filter-bar input { flex: 1; min-width: 200px; }
     
     /* إشعارات */
     .toast-container { position: fixed; bottom: 20px; left: 20px; z-index: 2000; }
@@ -171,6 +172,7 @@
         <li class="sidebar-item" onclick="switchTab('liveSettings')"><span class="icon">⚡</span><span>الإعدادات الحية</span></li>
         <li class="sidebar-item" onclick="switchTab('devices')"><span class="icon">📱</span><span>مراقبة الأجهزة</span></li>
         <li class="sidebar-item" onclick="switchTab('banned')"><span class="icon">🚫</span><span>المحظورون</span></li>
+        <li class="sidebar-item" onclick="switchTab('adminSettings')"><span class="icon">🔐</span><span>إعدادات الأدمن</span></li>
       </ul>
       <div class="sidebar-footer">
         <button class="btn btn-outline" style="width:100%;" onclick="logout()">🚪 تسجيل خروج</button>
@@ -217,7 +219,7 @@
         <div class="section-card">
           <div class="section-header">
             <div class="section-title"><span class="icon">📝</span>إدارة الأسئلة</div>
-            <div style="display: flex; gap: 10px;">
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
               <button class="btn btn-success" onclick="exportQuestions()">📤 تصدير الأسئلة</button>
               <button class="btn btn-primary" onclick="document.getElementById('importFile').click()">📥 استيراد أسئلة</button>
               <input type="file" id="importFile" accept=".json" style="display:none;" onchange="importQuestions(this)">
@@ -271,8 +273,9 @@
           <div class="section-header"><div class="section-title"><span class="icon">🔄</span>التحكم باللعبة</div></div>
           <div style="display: flex; gap: 15px; flex-wrap: wrap;">
             <button class="btn btn-danger" onclick="resetAllGames()">🔄 إعادة ضبط جميع الغرف</button>
-            <button class="btn btn-warning" onclick="pauseAllGames()">⏸️ إيقاف جميع الجولات</button>
+            <button class="btn btn-warning" onclick="pauseAllGames()" style="background:#886600; color:white;">⏸️ إيقاف جميع الجولات</button>
             <button class="btn btn-success" onclick="resumeAllGames()">▶️ استئناف جميع الجولات</button>
+            <button class="btn btn-danger" onclick="clearAllRooms()">🗑️ حذف جميع الغرف</button>
           </div>
         </div>
       </div>
@@ -295,6 +298,24 @@
         <div class="section-card">
           <div class="section-header"><div class="section-title"><span class="icon">🚫</span>اللاعبين المحظورين</div></div>
           <div id="bannedList" style="display: flex; flex-direction: column; gap: 10px;"></div>
+        </div>
+      </div>
+      
+      <!-- تبويب إعدادات الأدمن -->
+      <div id="tab-adminSettings" class="tab-content">
+        <div class="section-card">
+          <div class="section-header"><div class="section-title"><span class="icon">🔐</span>تغيير بيانات الدخول</div></div>
+          <div style="display: grid; gap: 20px; max-width: 400px;">
+            <div class="form-group">
+              <label>👤 اسم المستخدم الجديد</label>
+              <input type="text" id="newUsername" placeholder="اسم المستخدم">
+            </div>
+            <div class="form-group">
+              <label>🔑 كلمة المرور الجديدة</label>
+              <input type="password" id="newPassword" placeholder="كلمة المرور">
+            </div>
+            <button class="btn btn-primary" onclick="updateAdminCredentials()">🔐 تحديث بيانات الدخول</button>
+          </div>
         </div>
       </div>
     </div>
@@ -430,13 +451,12 @@
     document.getElementById('liveViewSlider').oninput = function() { document.getElementById('liveViewVal').innerText = this.value; };
   }
   
-  // ==================== تحديث القوائم ====================
   function updateCategoriesList() {
     const cats = [...new Set(allQuestions.map(q => q.cat).filter(Boolean))];
     const datalist = document.getElementById('categoriesDatalist');
     const filter = document.getElementById('filterCategory');
-    datalist.innerHTML = cats.map(c => `<option value="${c}">`).join('');
-    filter.innerHTML = '<option value="">كل الفئات</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join('');
+    if(datalist) datalist.innerHTML = cats.map(c => `<option value="${c}">`).join('');
+    if(filter) filter.innerHTML = '<option value="">كل الفئات</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join('');
   }
   
   function updateStats() {
@@ -460,9 +480,9 @@
     `).join('');
   }
   
-  // ==================== عرض الجداول ====================
   function renderQuestionsTable() {
     const tbody = document.getElementById('questionsTableBody');
+    if(!tbody) return;
     const questions = filteredQuestions.slice(0, 100);
     
     tbody.innerHTML = questions.map((q, i) => `
@@ -471,7 +491,7 @@
         <td>${q.q?.substring(0, 40)}${q.q?.length > 40 ? '...' : ''}</td>
         <td>${q.opts?.join(' / ') || ''}</td>
         <td style="color:#00aa00; font-weight:700;">${q.ans}</td>
-        <td><span class="category-badge ${q.cat}">${q.cat || 'متنوع'}</span></td>
+        <td><span class="category-badge ${q.cat || 'متنوع'}">${q.cat || 'متنوع'}</span></td>
         <td class="action-cell">
           <button class="icon-btn edit" onclick="editQuestion('${q.id}')">✏️</button>
           <button class="icon-btn delete" onclick="deleteQuestion('${q.id}')">🗑️</button>
@@ -484,8 +504,10 @@
   }
   
   function renderActivePlayersTable() {
+    const tbody = document.getElementById('activePlayersTable');
+    if(!tbody) return;
     const players = Object.entries(allPlayers).filter(([id]) => !bannedPlayers[id]);
-    const html = players.map(([id, p]) => `
+    tbody.innerHTML = players.map(([id, p]) => `
       <tr>
         <td>${p.name}</td>
         <td><code>${p.roomId}</code></td>
@@ -493,13 +515,14 @@
         <td>${p.score || 0}</td>
         <td><span style="color:#00ff00;">● متصل</span></td>
       </tr>
-    `).join('');
-    document.getElementById('activePlayersTable').innerHTML = html || '<tr><td colspan="5" style="text-align:center; padding:20px;">لا يوجد لاعبين نشطين</td></tr>';
+    `).join('') || '<tr><td colspan="5" style="text-align:center; padding:20px;">لا يوجد لاعبين نشطين</td></tr>';
   }
   
   function renderDevicesTable() {
+    const tbody = document.getElementById('devicesTable');
+    if(!tbody) return;
     const players = Object.entries(allPlayers);
-    const html = players.map(([id, p]) => `
+    tbody.innerHTML = players.map(([id, p]) => `
       <tr>
         <td>${p.name}</td>
         <td><code style="font-size:11px;">${id.substring(0, 15)}...</code></td>
@@ -514,25 +537,25 @@
           <button class="icon-btn" onclick="kickPlayer('${p.roomId}', '${id}')">👢 طرد</button>
         </td>
       </tr>
-    `).join('');
-    document.getElementById('devicesTable').innerHTML = html || '<tr><td colspan="6" style="text-align:center; padding:20px;">لا يوجد أجهزة متصلة</td></tr>';
+    `).join('') || '<tr><td colspan="6" style="text-align:center; padding:20px;">لا يوجد أجهزة متصلة</td></tr>';
   }
   
   function renderBannedList() {
+    const container = document.getElementById('bannedList');
+    if(!container) return;
     const banned = Object.entries(bannedPlayers);
-    const html = banned.map(([id, data]) => `
+    container.innerHTML = banned.map(([id, data]) => `
       <div style="background: #1a0000; border-right: 4px solid #ff4444; border-radius: 12px; padding: 16px; display: flex; justify-content: space-between; align-items: center;">
         <div><strong>${data.name || 'غير معروف'}</strong><br><small style="color:#888;">${id}</small></div>
         <button class="btn btn-outline btn-sm" onclick="unbanPlayer('${id}')">✅ فك الحظر</button>
       </div>
-    `).join('');
-    document.getElementById('bannedList').innerHTML = html || '<p style="color:#aaa; text-align:center;">لا يوجد لاعبين محظورين</p>';
+    `).join('') || '<p style="color:#aaa; text-align:center;">لا يوجد لاعبين محظورين</p>';
   }
   
   // ==================== تصفية الأسئلة ====================
   window.filterQuestions = function() {
-    const search = document.getElementById('searchQuestions').value.toLowerCase();
-    const cat = document.getElementById('filterCategory').value;
+    const search = document.getElementById('searchQuestions')?.value.toLowerCase() || '';
+    const cat = document.getElementById('filterCategory')?.value || '';
     
     filteredQuestions = allQuestions.filter(q => 
       (!search || q.q?.toLowerCase().includes(search)) &&
@@ -720,6 +743,30 @@
     showToast('تم استئناف جميع الجولات', 'success');
   };
   
+  window.clearAllRooms = function() {
+    if(confirm('تحذير: سيتم حذف جميع الغرف نهائياً!')) {
+      db.ref('rooms').remove();
+      showToast('تم حذف جميع الغرف', 'success');
+    }
+  };
+  
+  // ==================== إعدادات الأدمن ====================
+  window.updateAdminCredentials = function() {
+    const newUser = document.getElementById('newUsername').value.trim();
+    const newPass = document.getElementById('newPassword').value;
+    
+    if(!newUser || !newPass) {
+      showToast('الرجاء إدخال اسم المستخدم وكلمة المرور', 'error');
+      return;
+    }
+    
+    adminCredentials = { username: newUser, password: newPass };
+    db.ref('settings/admin').set(adminCredentials);
+    document.getElementById('newUsername').value = '';
+    document.getElementById('newPassword').value = '';
+    showToast('تم تحديث بيانات الدخول بنجاح', 'success');
+  };
+  
   // ==================== التنقل بين التبويبات ====================
   window.switchTab = function(tab) {
     document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
@@ -728,8 +775,19 @@
     document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
     event.target.closest('.sidebar-item').classList.add('active');
     
-    const titles = { dashboard: '📊 الرئيسية', questions: '📝 إدارة الأسئلة', liveSettings: '⚡ الإعدادات الحية', devices: '📱 مراقبة الأجهزة', banned: '🚫 المحظورون' };
+    const titles = { 
+      dashboard: '📊 الرئيسية', 
+      questions: '📝 إدارة الأسئلة', 
+      liveSettings: '⚡ الإعدادات الحية', 
+      devices: '📱 مراقبة الأجهزة', 
+      banned: '🚫 المحظورون',
+      adminSettings: '🔐 إعدادات الأدمن'
+    };
     document.getElementById('pageTitle').innerText = titles[tab] || tab;
+    
+    if(tab === 'questions') renderQuestionsTable();
+    if(tab === 'devices') renderDevicesTable();
+    if(tab === 'banned') renderBannedList();
   };
   
   // ==================== إشعارات ====================
