@@ -2,147 +2,84 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>لوحة التحكم · الألغاز</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>لوحة التحكم · أبو فيصل</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: #0a0a0a; font-family: 'Cairo', sans-serif; color: white; padding: 16px; min-height: 100vh; }
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body { background: #0a0a0a; font-family: 'Cairo', sans-serif; color: white; min-height: 100vh; padding: 16px; padding-top: env(safe-area-inset-top); }
     .container { max-width: 500px; margin: 0 auto; }
     
-    /* شاشة الدخول */
-    #loginBox { background: #151515; border-radius: 24px; padding: 30px 20px; border: 2px solid #ff3333; margin-top: 50px; }
     h1 { font-size: 28px; font-weight: 900; background: linear-gradient(135deg, #ff6b6b, #ff1a1a); -webkit-background-clip: text; background-clip: text; color: transparent; text-align: center; margin-bottom: 30px; }
+    
+    /* شاشة الدخول */
+    #loginBox { background: #151515; border-radius: 24px; padding: 30px 20px; border: 1px solid #ff3333; margin-top: 50px; display: block; }
     input { width: 100%; padding: 16px; background: #0a0a0a; border: 2px solid #333; border-radius: 16px; color: white; font-size: 16px; margin-bottom: 15px; font-family: 'Cairo', sans-serif; }
-    input:focus { border-color: #ff4444; outline: none; }
-    .btn { width: 100%; padding: 16px; background: #e60000; border: none; border-radius: 16px; color: white; font-size: 18px; font-weight: 700; cursor: pointer; font-family: 'Cairo', sans-serif; margin-top: 10px; }
-    .btn-secondary { background: #333; }
-    .error { color: #ff4444; text-align: center; margin-top: 15px; }
+    .btn { width: 100%; padding: 16px; background: #e60000; border: none; border-radius: 16px; color: white; font-size: 18px; font-weight: 700; cursor: pointer; }
     
     /* لوحة التحكم */
-    #dashboard { display: none; }
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-    .header h2 { font-size: 22px; color: #ff4444; }
+    #dashboard { display: none; opacity: 0; transition: opacity 0.5s; }
+    #dashboard.active { display: block; opacity: 1; }
+    
     .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
     .stat { background: #151515; border-radius: 16px; padding: 15px; text-align: center; border: 1px solid #2a2a2a; }
-    .stat .num { font-size: 28px; font-weight: 900; color: #ff4444; }
-    .stat .label { color: #aaa; font-size: 12px; }
+    .stat .num { font-size: 24px; font-weight: 900; color: #ff4444; }
+    .stat .label { color: #aaa; font-size: 11px; }
     
     .card { background: #151515; border-radius: 20px; padding: 18px; border: 1px solid #2a2a2a; margin-bottom: 18px; }
-    .card h3 { font-size: 18px; margin-bottom: 15px; color: #ff9999; }
+    h3 { font-size: 18px; margin-bottom: 15px; color: #ff9999; }
     
-    .form-row { margin-bottom: 12px; }
-    .form-row label { display: block; color: #aaa; margin-bottom: 5px; font-size: 13px; }
-    .form-row input, .form-row select { width: 100%; padding: 14px; background: #0a0a0a; border: 1px solid #333; border-radius: 14px; color: white; font-size: 15px; font-family: 'Cairo', sans-serif; }
-    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .btn-small { padding: 10px; border-radius: 12px; font-size: 14px; background: #333; color: white; border: none; width: 100%; margin-top: 10px; font-family: 'Cairo'; }
+    .btn-danger { background: #aa0000; }
     
-    .slider-row { margin-bottom: 18px; }
-    .slider-row label { display: flex; justify-content: space-between; }
-    input[type="range"] { width: 100%; accent-color: #ff1a1a; }
-    
-    .question-item { background: #1a1a1a; border-radius: 14px; padding: 12px; margin-bottom: 10px; border: 1px solid #333; }
-    .question-item p { margin-bottom: 8px; font-size: 14px; }
-    .question-meta { display: flex; gap: 15px; color: #aaa; font-size: 12px; margin-bottom: 10px; }
-    .question-actions { display: flex; gap: 8px; }
-    .btn-small { padding: 8px 16px; border-radius: 10px; font-size: 13px; cursor: pointer; border: none; font-family: 'Cairo', sans-serif; background: #333; color: white; }
-    .btn-edit { background: #0066aa; }
-    .btn-delete { background: #aa0000; }
-    
-    .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.95); z-index: 1000; padding: 16px; overflow-y: auto; }
-    .modal.active { display: block; }
-    .modal-content { background: #151515; border-radius: 24px; padding: 20px; max-width: 500px; margin: 20px auto; border: 2px solid #ff3333; }
-    .modal-header { display: flex; justify-content: space-between; margin-bottom: 20px; }
-    .close-btn { background: none; border: none; color: white; font-size: 24px; cursor: pointer; }
-    
-    .toast { position: fixed; bottom: 20px; left: 20px; right: 20px; background: #006600; padding: 14px; border-radius: 14px; text-align: center; z-index: 2000; }
+    .toast { position: fixed; bottom: 30px; left: 20px; right: 20px; background: #008800; padding: 15px; border-radius: 15px; text-align: center; z-index: 9999; display: none; }
   </style>
 </head>
 <body>
+
 <div class="container">
-  <!-- شاشة تسجيل الدخول -->
   <div id="loginBox">
-    <h1>🔐 دخول المشرف</h1>
+    <h1>🔐 دخول الإدمن</h1>
     <input type="text" id="username" placeholder="اسم المستخدم" value="admin">
     <input type="password" id="password" placeholder="كلمة المرور" value="admin123">
-    <button class="btn" onclick="doLogin()">دخول</button>
-    <div id="loginError" class="error"></div>
+    <button class="btn" onclick="doLogin()">دخول اللوحة</button>
+    <p id="loginError" style="color:red; text-align:center; margin-top:10px;"></p>
   </div>
 
-  <!-- لوحة التحكم -->
   <div id="dashboard">
-    <div class="header">
-      <h2>🎮 لوحة التحكم</h2>
-      <button class="btn-small" onclick="doLogout()">🚪 خروج</button>
-    </div>
-    
-    <!-- إحصائيات -->
+    <h1>🎯 لوحة التحكم</h1>
     <div class="stats">
       <div class="stat"><div class="num" id="statQuestions">0</div><div class="label">سؤال</div></div>
       <div class="stat"><div class="num" id="statRooms">0</div><div class="label">غرفة</div></div>
       <div class="stat"><div class="num" id="statPlayers">0</div><div class="label">لاعب</div></div>
     </div>
-    
-    <!-- إعدادات -->
+
     <div class="card">
-      <h3>⚙️ إعدادات اللعبة</h3>
-      <div class="slider-row"><label>🔴 عدد الجولات <span id="roundsVal">10</span></label><input type="range" id="roundsSlider" min="5" max="30" value="10"></div>
-      <div class="slider-row"><label>⏳ وقت التفكير <span id="thinkVal">15</span> ث</label><input type="range" id="thinkSlider" min="5" max="45" value="15"></div>
-      <div class="slider-row"><label>🕒 عرض الإجابة <span id="viewVal">3</span> ث</label><input type="range" id="viewSlider" min="2" max="10" value="3"></div>
-      <button class="btn-small" onclick="saveSettings()" style="width:100%; margin-top:10px;">💾 حفظ الإعدادات</button>
-      <button class="btn-small btn-delete" onclick="resetGame()" style="width:100%; margin-top:8px;">🔄 إعادة ضبط اللعبة</button>
+      <h3>➕ أضف لغزاً جديداً</h3>
+      <input type="text" id="qText" placeholder="اكتب السؤال هنا...">
+      <input type="text" id="optA" placeholder="الخيار أ">
+      <input type="text" id="optB" placeholder="الخيار ب">
+      <input type="text" id="optC" placeholder="الخيار ج">
+      <input type="text" id="optD" placeholder="الخيار د">
+      <select id="correctAns" style="width:100%; padding:15px; background:#0a0a0a; color:white; border-radius:15px; border:1px solid #333; margin-bottom:10px; font-family:'Cairo';">
+        <option value="0">الإجابة هي: أ</option>
+        <option value="1">الإجابة هي: ب</option>
+        <option value="2">الإجابة هي: ج</option>
+        <option value="3">الإجابة هي: د</option>
+      </select>
+      <button class="btn" onclick="addQuestion()">💾 حفظ السؤال في السحابة</button>
     </div>
-    
-    <!-- إضافة سؤال -->
-    <div class="card">
-      <h3>➕ إضافة سؤال جديد</h3>
-      <div class="form-row"><input type="text" id="qText" placeholder="السؤال"></div>
-      <div class="form-grid">
-        <input type="text" id="optA" placeholder="الخيار أ">
-        <input type="text" id="optB" placeholder="الخيار ب">
-        <input type="text" id="optC" placeholder="الخيار ج">
-        <input type="text" id="optD" placeholder="الخيار د">
-      </div>
-      <div class="form-grid" style="margin-top:10px;">
-        <select id="correctAns"><option value="0">الإجابة: أ</option><option value="1">الإجابة: ب</option><option value="2">الإجابة: ج</option><option value="3">الإجابة: د</option></select>
-        <input type="text" id="qCat" placeholder="التصنيف" value="متنوع">
-      </div>
-      <button class="btn-small" onclick="addQuestion()" style="width:100%; margin-top:12px;">💾 حفظ السؤال</button>
-    </div>
-    
-    <!-- قائمة الأسئلة -->
-    <div class="card">
-      <h3>📋 الأسئلة (آخر 20)</h3>
-      <div id="questionsList"></div>
-    </div>
-  </div>
-  
-  <!-- مودال تعديل -->
-  <div class="modal" id="editModal">
-    <div class="modal-content">
-      <div class="modal-header"><h3>✏️ تعديل السؤال</h3><button class="close-btn" onclick="closeModal()">&times;</button></div>
-      <input type="hidden" id="editId">
-      <div class="form-row"><input type="text" id="editQText" placeholder="السؤال"></div>
-      <div class="form-grid">
-        <input type="text" id="editOptA" placeholder="أ">
-        <input type="text" id="editOptB" placeholder="ب">
-        <input type="text" id="editOptC" placeholder="ج">
-        <input type="text" id="editOptD" placeholder="د">
-      </div>
-      <div class="form-grid" style="margin-top:10px;">
-        <select id="editCorrect"><option value="0">أ</option><option value="1">ب</option><option value="2">ج</option><option value="3">د</option></select>
-        <input type="text" id="editCat" placeholder="التصنيف">
-      </div>
-      <button class="btn-small" onclick="updateQuestion()" style="width:100%; margin-top:15px;">💾 حفظ التعديلات</button>
-    </div>
+
+    <button class="btn-small btn-danger" onclick="doLogout()">🚪 تسجيل خروج</button>
   </div>
 </div>
 
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<div id="toast" class="toast">✅ تم الحفظ بنجاح</div>
 
 <script>
-  // تهيئة Firebase
+  // بيانات Firebase الخاصة بك (لا تغيرها)
   const firebaseConfig = {
     apiKey: "AIzaSyBKs24sqojKX51Q4HAPv3amY1oTGo3YcyA",
     authDomain: "myquiz-314f9.firebaseapp.com",
@@ -152,207 +89,84 @@
     messagingSenderId: "86590365416",
     appId: "1:86590365416:web:0d37b3695ec028103ff35d"
   };
-  
-  firebase.initializeApp(firebaseConfig);
+
+  // محاولة التهيئة والتأكد من عدم التكرار
+  if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+  }
   const db = firebase.database();
-  
-  // بيانات الدخول
-  const ADMIN = { user: 'admin', pass: 'admin123' };
-  let allQuestions = [];
-  
-  // ==================== تسجيل الدخول ====================
-  window.doLogin = function() {
-    const user = document.getElementById('username').value.trim();
-    const pass = document.getElementById('password').value;
-    
-    if(user === ADMIN.user && pass === ADMIN.pass) {
-      document.getElementById('loginBox').style.display = 'none';
-      document.getElementById('dashboard').style.display = 'block';
-      localStorage.setItem('adminAuth', 'true');
-      loadDashboard();
+
+  function doLogin() {
+    const u = document.getElementById('username').value;
+    const p = document.getElementById('password').value;
+    if(u === 'admin' && p === 'admin123') {
+      showDashboard();
+      localStorage.setItem('isLogged', 'true');
     } else {
-      document.getElementById('loginError').innerText = 'خطأ في اسم المستخدم أو كلمة المرور';
+      document.getElementById('loginError').innerText = "بيانات الدخول غير صحيحة";
     }
-  };
-  
-  window.doLogout = function() {
-    localStorage.removeItem('adminAuth');
-    document.getElementById('loginBox').style.display = 'block';
-    document.getElementById('dashboard').style.display = 'none';
-  };
-  
-  // تحقق تلقائي
-  if(localStorage.getItem('adminAuth') === 'true') {
+  }
+
+  function showDashboard() {
     document.getElementById('loginBox').style.display = 'none';
-    document.getElementById('dashboard').style.display = 'block';
-    loadDashboard();
+    const dash = document.getElementById('dashboard');
+    dash.style.display = 'block';
+    setTimeout(() => dash.classList.add('active'), 50);
+    startSync();
   }
-  
-  // ==================== تحميل البيانات ====================
-  function loadDashboard() {
-    // تحميل الأسئلة
+
+  function startSync() {
+    // مزامنة الأسئلة
     db.ref('questions').on('value', snap => {
-      const data = snap.val() || {};
-      allQuestions = Object.entries(data).map(([id, q]) => ({ id, ...q }));
-      document.getElementById('statQuestions').innerText = allQuestions.length;
-      renderQuestions();
+      document.getElementById('statQuestions').innerText = snap.numChildren();
     });
-    
-    // تحميل الإحصائيات
+    // مزامنة الغرف
     db.ref('rooms').on('value', snap => {
-      const rooms = snap.val() || {};
-      let players = 0;
-      Object.values(rooms).forEach(r => { if(r.players) players += Object.keys(r.players).length; });
-      document.getElementById('statRooms').innerText = Object.keys(rooms).length;
-      document.getElementById('statPlayers').innerText = players;
+      document.getElementById('statRooms').innerText = snap.numChildren();
     });
-    
-    // تحميل الإعدادات
-    db.ref('settings/global').on('value', snap => {
-      const s = snap.val() || { defaultRounds: 10, defaultThinkTime: 15, defaultViewTime: 3 };
-      document.getElementById('roundsSlider').value = s.defaultRounds;
-      document.getElementById('thinkSlider').value = s.defaultThinkTime;
-      document.getElementById('viewSlider').value = s.defaultViewTime;
-      document.getElementById('roundsVal').innerText = s.defaultRounds;
-      document.getElementById('thinkVal').innerText = s.defaultThinkTime;
-      document.getElementById('viewVal').innerText = s.defaultViewTime;
-    });
-    
-    document.getElementById('roundsSlider').oninput = function() { document.getElementById('roundsVal').innerText = this.value; };
-    document.getElementById('thinkSlider').oninput = function() { document.getElementById('thinkVal').innerText = this.value; };
-    document.getElementById('viewSlider').oninput = function() { document.getElementById('viewVal').innerText = this.value; };
   }
-  
-  function renderQuestions() {
-    const container = document.getElementById('questionsList');
-    const recent = allQuestions.slice(-20).reverse();
-    
-    if(recent.length === 0) {
-      container.innerHTML = '<p style="color:#aaa; text-align:center; padding:20px;">لا توجد أسئلة بعد</p>';
-      return;
-    }
-    
-    container.innerHTML = recent.map(q => `
-      <div class="question-item">
-        <p><strong>${q.q || 'بدون سؤال'}</strong></p>
-        <div class="question-meta">
-          <span>📁 ${q.cat || 'متنوع'}</span>
-          <span>✓ ${q.ans || ''}</span>
-        </div>
-        <div class="question-actions">
-          <button class="btn-small btn-edit" onclick='editQuestion(${JSON.stringify(q)})'>✏️ تعديل</button>
-          <button class="btn-small btn-delete" onclick="deleteQuestion('${q.id}')">🗑️ حذف</button>
-        </div>
-      </div>
-    `).join('');
-  }
-  
-  // ==================== إدارة الأسئلة ====================
-  window.addQuestion = function() {
-    const q = document.getElementById('qText').value.trim();
-    const a = document.getElementById('optA').value.trim();
-    const b = document.getElementById('optB').value.trim();
-    const c = document.getElementById('optC').value.trim();
-    const d = document.getElementById('optD').value.trim();
+
+  function addQuestion() {
+    const q = document.getElementById('qText').value;
+    const a = document.getElementById('optA').value;
+    const b = document.getElementById('optB').value;
+    const c = document.getElementById('optC').value;
+    const d = document.getElementById('optD').value;
     const correctIdx = parseInt(document.getElementById('correctAns').value);
-    const cat = document.getElementById('qCat').value.trim() || 'متنوع';
     
-    if(!q || !a || !b || !c || !d) {
-      alert('الرجاء ملء جميع الحقول');
-      return;
-    }
-    
+    if(!q || !a || !b) return alert("أكمل البيانات أولاً");
+
     const opts = [a, b, c, d];
-    const ans = opts[correctIdx];
-    
-    db.ref('questions').push({ q, opts, ans, cat, createdAt: Date.now() });
-    
-    // مسح الحقول
-    document.getElementById('qText').value = '';
-    document.getElementById('optA').value = '';
-    document.getElementById('optB').value = '';
-    document.getElementById('optC').value = '';
-    document.getElementById('optD').value = '';
-    
-    showToast('✅ تم إضافة السؤال');
-  };
-  
-  window.editQuestion = function(q) {
-    document.getElementById('editId').value = q.id;
-    document.getElementById('editQText').value = q.q || '';
-    document.getElementById('editOptA').value = q.opts?.[0] || '';
-    document.getElementById('editOptB').value = q.opts?.[1] || '';
-    document.getElementById('editOptC').value = q.opts?.[2] || '';
-    document.getElementById('editOptD').value = q.opts?.[3] || '';
-    document.getElementById('editCat').value = q.cat || '';
-    
-    const idx = q.opts?.indexOf(q.ans) || 0;
-    document.getElementById('editCorrect').value = idx;
-    
-    document.getElementById('editModal').classList.add('active');
-  };
-  
-  window.updateQuestion = function() {
-    const id = document.getElementById('editId').value;
-    const q = document.getElementById('editQText').value.trim();
-    const opts = [
-      document.getElementById('editOptA').value.trim(),
-      document.getElementById('editOptB').value.trim(),
-      document.getElementById('editOptC').value.trim(),
-      document.getElementById('editOptD').value.trim()
-    ];
-    const ans = opts[parseInt(document.getElementById('editCorrect').value)];
-    const cat = document.getElementById('editCat').value.trim();
-    
-    db.ref(`questions/${id}`).update({ q, opts, ans, cat, updatedAt: Date.now() });
-    closeModal();
-    showToast('✅ تم تحديث السؤال');
-  };
-  
-  window.deleteQuestion = function(id) {
-    if(confirm('هل أنت متأكد من حذف هذا السؤال؟')) {
-      db.ref(`questions/${id}`).remove();
-      showToast('✅ تم حذف السؤال');
-    }
-  };
-  
-  window.closeModal = function() {
-    document.getElementById('editModal').classList.remove('active');
-  };
-  
-  // ==================== إعدادات ====================
-  window.saveSettings = function() {
-    const settings = {
-      defaultRounds: +document.getElementById('roundsSlider').value,
-      defaultThinkTime: +document.getElementById('thinkSlider').value,
-      defaultViewTime: +document.getElementById('viewSlider').value
-    };
-    db.ref('settings/global').set(settings);
-    showToast('✅ تم حفظ الإعدادات');
-  };
-  
-  window.resetGame = function() {
-    if(confirm('إعادة ضبط اللعبة لجميع اللاعبين؟')) {
-      db.ref('rooms').once('value', snap => {
-        const rooms = snap.val() || {};
-        Object.keys(rooms).forEach(id => {
-          db.ref(`rooms/${id}/gameState`).set({ started: false });
-        });
-      });
-      showToast('✅ تم إعادة ضبط اللعبة');
-    }
-  };
-  
-  function showToast(msg) {
-    const old = document.querySelector('.toast');
-    if(old) old.remove();
-    
-    const toast = document.createElement('div');
-    toast.className = 'toast';
-    toast.innerText = msg;
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 2000);
+    db.ref('questions').push({
+      q: q,
+      opts: opts,
+      ans: opts[correctIdx],
+      cat: "عام",
+      time: Date.now()
+    }).then(() => {
+      showToast();
+      document.getElementById('qText').value = "";
+      document.getElementById('optA').value = "";
+      document.getElementById('optB').value = "";
+      document.getElementById('optC').value = "";
+      document.getElementById('optD').value = "";
+    });
   }
+
+  function showToast() {
+    const t = document.getElementById('toast');
+    t.style.display = 'block';
+    setTimeout(() => t.style.display = 'none', 2000);
+  }
+
+  function doLogout() {
+    localStorage.removeItem('isLogged');
+    location.reload();
+  }
+
+  // فحص تسجيل الدخول عند الفتح
+  if(localStorage.getItem('isLogged') === 'true') showDashboard();
 </script>
+
 </body>
 </html>
