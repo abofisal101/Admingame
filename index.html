@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>لوحة التحكم | نظام المسابقات</title>
+  <title>لوحة التحكم | نظام المسابقات المتقدم</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -21,13 +21,15 @@
       --red-2:#b60d0d;
       --green:#12d27c;
       --yellow:#ffb020;
+      --blue:#4a9eff;
       --shadow:0 20px 50px rgba(0,0,0,.45);
       --radius:22px;
+      --glow:0 0 20px rgba(255,45,45,0.5),0 0 40px rgba(255,45,45,0.3);
     }
     *{box-sizing:border-box}
     html,body{margin:0;padding:0;background:radial-gradient(circle at top,#1a0909 0%,#080808 36%,#050505 100%);color:var(--text);font-family:'Cairo',system-ui,sans-serif;min-height:100%}
     body{padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 28px);}
-    .shell{max-width:1400px;margin:0 auto}
+    .shell{max-width:1600px;margin:0 auto}
     .hero{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-bottom:18px;flex-wrap:wrap}
     .hero h1{margin:0;font-size:clamp(26px,4vw,38px);font-weight:800}
     .hero p{margin:6px 0 0;color:var(--muted)}
@@ -54,7 +56,7 @@
     .btn-secondary{background:#1e1e1e;color:#fff;border:1px solid rgba(255,255,255,.09)}
     .btn-danger{background:#5b1212;color:#fff}
     .btn-warning{background:#6a4b0c;color:#fff}
-    .btn-ghost{background:transparent;color:#ddd;border:1px solid rgba(255,255,255,.12)}
+    .btn-success{background:#0f5c2e;color:#fff}
     .btn-info{background:#0f4c5f;color:#fff}
     .table-wrap{overflow:auto;border:1px solid var(--line);border-radius:18px;background:var(--panel)}
     table{width:100%;border-collapse:collapse;min-width:950px}
@@ -65,32 +67,68 @@
     .online{background:rgba(18,210,124,.12);color:#81ffc0}
     .offline{background:rgba(255,176,32,.12);color:#ffd188}
     .muted{color:var(--muted)}
-    .two-col{display:grid;grid-template-columns:1.1fr .9fr;gap:16px}
-    .login-overlay{position:fixed;inset:0;background:rgba(0,0,0,.82);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;padding:20px;z-index:50}
+    .login-overlay{position:fixed;inset:0;background:rgba(0,0,0,.92);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;padding:20px;z-index:100}
     .login-box{width:min(440px,100%);background:linear-gradient(180deg,#140909,#0a0a0a);border:1px solid rgba(255,255,255,.09);border-radius:28px;padding:22px;box-shadow:var(--shadow)}
     .login-box h3{margin:0 0 8px;font-size:28px}
     .login-box p{margin:0 0 18px;color:var(--muted)}
-    .hint{font-size:13px;color:#ffb0b0;background:rgba(255,45,45,.08);border:1px solid rgba(255,45,45,.18);padding:10px 12px;border-radius:12px;margin-top:14px}
     .message{margin-top:12px;padding:10px 12px;border-radius:12px;font-size:14px;display:none}
     .message.show{display:block}
     .message.success{background:rgba(18,210,124,.1);color:#8ff6bf;border:1px solid rgba(18,210,124,.25)}
     .message.error{background:rgba(255,45,45,.1);color:#ffc0c0;border:1px solid rgba(255,45,45,.25)}
     .message.info{background:rgba(255,176,32,.1);color:#ffdca0;border:1px solid rgba(255,176,32,.22)}
     .mini{font-size:12px;color:var(--muted)}
-    .room-details{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px;margin-top:16px}
-    .room-details h3{margin:0 0 12px;font-size:18px}
-    .room-players-list{max-height:200px;overflow-y:auto}
-    .room-player-item{display:flex;justify-content:space-between;padding:8px;border-bottom:1px solid rgba(255,255,255,.05)}
-    .announcement-box{background:linear-gradient(135deg,rgba(255,45,45,.15),rgba(182,13,13,.1));border:2px solid var(--red);border-radius:18px;padding:16px;margin-bottom:16px}
-    @media (max-width:1100px){
-      .controls,.stats,.two-col{grid-template-columns:1fr}
+    
+    /* شريط الإعلانات المتحرك */
+    .announcement-bar{background:linear-gradient(135deg,#1a0a0a,#0d0505);border:2px solid var(--red);border-radius:18px;margin-bottom:16px;overflow:hidden;position:relative;box-shadow:var(--glow);animation:borderPulse 2s infinite}
+    @keyframes borderPulse{
+      0%{box-shadow:0 0 5px rgba(255,45,45,0.3),0 0 10px rgba(255,45,45,0.2);border-color:#ff2d2d}
+      50%{box-shadow:0 0 25px rgba(255,45,45,0.8),0 0 40px rgba(255,45,45,0.5);border-color:#ff6b6b}
+      100%{box-shadow:0 0 5px rgba(255,45,45,0.3),0 0 10px rgba(255,45,45,0.2);border-color:#ff2d2d}
     }
-    @media (max-width:720px){
-      .hero{align-items:flex-start}
-      .stat .value{font-size:24px}
-      .card{padding:15px}
-      button{width:100%}
+    .announcement-header{background:linear-gradient(135deg,var(--red),var(--red-2));padding:12px 16px;color:#fff;font-weight:800;display:flex;justify-content:space-between;align-items:center}
+    .marquee-container{background:rgba(0,0,0,.6);padding:14px;overflow:hidden;white-space:nowrap}
+    .marquee-text{display:inline-block;padding-left:100%;animation:marquee 15s linear infinite;font-size:18px;font-weight:700;color:#fff;text-shadow:0 0 5px var(--red)}
+    @keyframes marquee{
+      0%{transform:translate(0,0)}
+      100%{transform:translate(-100%,0)}
     }
+    .marquee-text span{background:rgba(255,45,45,.3);padding:4px 12px;border-radius:20px;margin:0 5px}
+    
+    /* قائمة الأسئلة */
+    .questions-list{max-height:500px;overflow-y:auto}
+    .question-item{background:var(--panel-2);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:12px}
+    .question-header{display:flex;justify-content:space-between;align-items:start;flex-wrap:wrap;gap:10px;margin-bottom:12px}
+    .question-text{font-weight:700;font-size:16px;flex:1}
+    .question-actions{display:flex;gap:8px}
+    .question-actions button{padding:6px 12px;font-size:12px}
+    .question-details{font-size:13px;color:var(--muted);margin-top:8px;padding-top:8px;border-top:1px solid var(--line)}
+    .options-preview{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+    .option-badge{background:rgba(255,255,255,.05);padding:4px 10px;border-radius:12px;font-size:12px}
+    .correct-badge{background:rgba(18,210,124,.2);color:var(--green)}
+    
+    /* نافذة تعديل السؤال */
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,.95);display:flex;align-items:center;justify-content:center;z-index:200;padding:20px;display:none}
+    .modal-content{background:linear-gradient(180deg,#1a0a0a,#0a0a0a);border:2px solid var(--red);border-radius:28px;padding:24px;width:100%;max-width:600px;max-height:90vh;overflow-y:auto}
+    .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+    .modal-header h3{margin:0;color:var(--red)}
+    .close-modal{background:none;border:none;color:#fff;font-size:28px;cursor:pointer;padding:0}
+    
+    /* الغرف */
+    .room-card{background:linear-gradient(135deg,rgba(255,45,45,.1),rgba(0,0,0,.3));border:1px solid var(--red);border-radius:16px;padding:14px;margin-bottom:12px}
+    .room-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:10px}
+    .room-name{font-size:18px;font-weight:800;color:var(--red)}
+    .room-players{font-size:13px;color:var(--muted)}
+    .edit-room-btn{background:rgba(255,176,32,.2);border:1px solid var(--yellow);padding:6px 12px;border-radius:12px;font-size:12px}
+    
+    .tab-buttons{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+    .tab-btn{background:var(--panel);border:1px solid var(--line);padding:10px 20px;border-radius:30px;cursor:pointer}
+    .tab-btn.active{background:linear-gradient(135deg,var(--red),var(--red-2));border-color:var(--red)}
+    .tab-content{display:none}
+    .tab-content.active{display:block}
+    
+    .advanced-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:12px}
+    @media (max-width:1100px){.controls,.stats{grid-template-columns:1fr}}
+    @media (max-width:720px){.hero{align-items:flex-start}.stat .value{font-size:24px}.card{padding:15px}button{width:100%}}
   </style>
 </head>
 <body>
@@ -98,47 +136,32 @@
     <div class="login-box">
       <h3>دخول الإدارة</h3>
       <p>سجّل الدخول للوصول إلى لوحة التحكم الحية.</p>
-      <div>
-        <label>اسم المستخدم</label>
-        <input type="text" id="adminUser" placeholder="admin" autocomplete="username">
-      </div>
-      <div style="margin-top:12px">
-        <label>كلمة المرور</label>
-        <input type="password" id="adminPass" placeholder="••••••••" autocomplete="current-password">
-      </div>
-      <div class="actions">
-        <button class="btn-primary" id="loginBtn">دخول</button>
-      </div>
+      <div><label>اسم المستخدم</label><input type="text" id="adminUser" placeholder="admin"></div>
+      <div style="margin-top:12px"><label>كلمة المرور</label><input type="password" id="adminPass" placeholder="••••••••"></div>
+      <div class="actions"><button class="btn-primary" id="loginBtn">دخول</button></div>
       <div class="message" id="loginMsg"></div>
-      <div class="hint">مهم: بيانات الدخول الحالية داخل الكود كافتراضي تجريبي. غيّرها فوراً قبل النشر الحقيقي.</div>
     </div>
   </div>
 
   <div class="shell">
-    <div class="hero">
-      <div>
-        <h1>لوحة تحكم المسابقات</h1>
-        <p>تحكم مباشر في الجولات، مراقبة اللاعبين، إدارة الأسئلة، وحماية الغرف.</p>
-      </div>
-      <div class="pill">Firebase Realtime Database • Legacy SDK 8.10.1</div>
-    </div>
+    <div class="hero"><div><h1>🎮 لوحة تحكم المسابقات</h1><p>تحكم كامل في الأسئلة، الغرف، والإعدادات</p></div><div class="pill">Firebase Realtime Database</div></div>
 
-    <!-- قسم الإعلان العلوي -->
-    <div class="card announcement-box">
-      <h2>📢 إعلان علوي تفاعلي</h2>
-      <div class="sub">إرسال رسالة فورية لجميع اللاعبين في غرفة محددة</div>
-      <div style="display:grid;gap:12px">
-        <select id="targetRoomSelect">
-          <option value="all">جميع الغرف</option>
+    <!-- شريط الإعلانات المتحرك -->
+    <div class="announcement-bar">
+      <div class="announcement-header">📢 لوحة الإعلانات التفاعلية <span style="font-size:12px">(يظهر للاعبين فوراً)</span></div>
+      <div style="padding:12px">
+        <select id="announceRoomSelect" style="margin-bottom:10px">
+          <option value="all">🌐 جميع الغرف</option>
         </select>
-        <textarea id="announcementText" placeholder="اكتب الرسالة التي تريد إرسالها للاعبين..." rows="3"></textarea>
-        <button class="btn-info" id="sendAnnouncementBtn">إرسال الإعلان</button>
-        <div id="announcementMsg" class="message"></div>
+        <textarea id="announceText" placeholder="اكتب رسالتك هنا... ستظهر للاعبين بشكل شريط متحرك مضيء" rows="2" style="margin-bottom:10px"></textarea>
+        <button class="btn-primary" id="sendAnnounceBtn" style="width:100%">🚀 إرسال إعلان فوري</button>
+      </div>
+      <div class="marquee-container" id="liveAnnouncePreview">
+        <div class="marquee-text" id="announceMarquee">✨ انتظر الإعلانات ✨</div>
       </div>
     </div>
 
-    <div class="card">
-      <h2>الإحصائيات الحية</h2>
+    <div class="card"><h2>📊 الإحصائيات الحية</h2>
       <div class="stats">
         <div class="stat"><div class="label">إجمالي الأسئلة</div><div class="value" id="totalQuestions">0</div></div>
         <div class="stat"><div class="label">المتصلون الآن</div><div class="value" id="onlinePlayers">0</div></div>
@@ -147,98 +170,98 @@
       </div>
     </div>
 
-    <div class="grid" style="margin-top:16px">
-      <section class="card">
-        <h2>الإعدادات اللحظية</h2>
-        <div class="sub">تعديل القيم التالية ثم تطبيقها فوراً على settings/live وعلى جميع الغرف النشطة.</div>
+    <!-- علامات تبويب -->
+    <div class="tab-buttons">
+      <div class="tab-btn active" data-tab="settings">⚙️ الإعدادات المتقدمة</div>
+      <div class="tab-btn" data-tab="questions">📚 إدارة الأسئلة</div>
+      <div class="tab-btn" data-tab="rooms">🏠 إدارة الغرف</div>
+      <div class="tab-btn" data-tab="players">👥 مراقبة اللاعبين</div>
+    </div>
+
+    <!-- تبويب الإعدادات -->
+    <div class="tab-content active" id="tab-settings">
+      <div class="card">
+        <h2>🎛️ الإعدادات اللحظية (صلاحية كاملة)</h2>
+        <div class="sub">تعديل القيم التالية - سيتم تطبيقها فوراً على جميع الغرف بغض النظر عن إعدادات منشئ الغرفة</div>
         <div class="controls">
-          <div class="control-box">
-            <div class="range-row"><label>عدد الجولات (10 - 30)</label><strong id="roundsValue">10</strong></div>
-            <input type="range" id="roundsSlider" min="10" max="30" value="10">
-            <div class="mini">يتزامن تلقائياً مع واجهات اللاعبين. أقل عدد 10، أعلى عدد 30.</div>
-          </div>
-          <div class="control-box">
-            <div class="range-row"><label>وقت التفكير</label><strong id="thinkValue">15 ث</strong></div>
-            <input type="range" id="thinkSlider" min="5" max="60" value="15">
-            <div class="mini">يتم تحديث settings/thinkTime و settings/live/thinkTime.</div>
-          </div>
-          <div class="control-box">
-            <div class="range-row"><label>وقت عرض الإجابة</label><strong id="answerValue">7 ث</strong></div>
-            <input type="range" id="answerSlider" min="3" max="30" value="7">
-            <div class="mini">مفيد لإظهار الإجابة قبل الجولة التالية.</div>
-          </div>
+          <div class="control-box"><div class="range-row"><label>عدد الجولات</label><strong id="roundsValue">10</strong></div><input type="range" id="roundsSlider" min="1" max="50" value="10"><div class="mini">النطاق الكامل: 1-50 (يتجاوز إعدادات اللاعبين)</div></div>
+          <div class="control-box"><div class="range-row"><label>وقت التفكير</label><strong id="thinkValue">15 ث</strong></div><input type="range" id="thinkSlider" min="3" max="120" value="15"><div class="mini">النطاق الكامل: 3-120 ثانية</div></div>
+          <div class="control-box"><div class="range-row"><label>وقت عرض الإجابة</label><strong id="answerValue">7 ث</strong></div><input type="range" id="answerSlider" min="2" max="60" value="7"><div class="mini">النطاق الكامل: 2-60 ثانية</div></div>
         </div>
-        <div class="actions">
-          <button class="btn-primary" id="applySettingsBtn">تطبيق على جميع الغرف</button>
-          <button class="btn-secondary" id="reloadSettingsBtn">إعادة تحميل من القاعدة</button>
+        <div class="advanced-controls">
+          <div class="control-box"><div class="range-row"><label>⏱️ وقت إضافي بين الجولات</label><strong id="breakValue">3 ث</strong></div><input type="range" id="breakSlider" min="0" max="15" value="3"></div>
+          <div class="control-box"><div class="range-row"><label>🔊 تأثيرات صوتية</label><select id="soundEffect"><option value="on">مفعل</option><option value="off">معطل</option></select></div></div>
+          <div class="control-box"><div class="range-row"><label>📱 عرض النتائج التراكمية</label><select id="showScores"><option value="yes">نعم</option><option value="no">لا</option></select></div></div>
         </div>
+        <div class="actions"><button class="btn-primary" id="applySettingsBtn">💾 تطبيق الإعدادات على جميع الغرف (تجاوز إعدادات المضيف)</button><button class="btn-secondary" id="reloadSettingsBtn">🔄 إعادة تحميل</button></div>
         <div class="message" id="settingsMsg"></div>
-      </section>
+      </div>
+    </div>
 
-      <section class="card">
-        <h2>مراقبة الأجهزة واللاعبين</h2>
-        <div class="sub">يعرض الاسم، المعرف الفريد، نوع الجهاز، الغرفة الحالية، وحالة الاتصال مع إجراءات فورية.</div>
+    <!-- تبويب الأسئلة -->
+    <div class="tab-content" id="tab-questions">
+      <div class="card">
+        <h2>📚 إدارة الأسئلة (إضافة، تعديل، حذف)</h2>
+        <div class="sub">عرض وتعديل جميع الأسئلة الموجودة في قاعدة البيانات</div>
+        <div class="questions-list" id="questionsList"></div>
+        <div class="message" id="questionManageMsg"></div>
+      </div>
+      
+      <div class="card">
+        <h2>➕ إضافة سؤال جديد</h2>
+        <div class="grid" style="grid-template-columns:1fr 1fr;gap:12px">
+          <div><label>السؤال</label><textarea id="newQText" placeholder="اكتب السؤال هنا" rows="2"></textarea></div>
+          <div><label>الخيارات (كل خيار في سطر)</label><textarea id="newQOpts" placeholder="خيار 1&#10;خيار 2&#10;خيار 3&#10;خيار 4" rows="2"></textarea></div>
+          <div><label>الإجابة الصحيحة</label><input type="text" id="newQAns" placeholder="نص الإجابة"></div>
+          <div><label>التصنيف</label><input type="text" id="newQCat" placeholder="مثال: تاريخ، رياضة، تقنية"></div>
+        </div>
+        <div class="actions"><button class="btn-primary" id="addNewQuestionBtn">➕ إضافة السؤال</button><button class="btn-secondary" id="importJsonBtn">📂 استيراد JSON</button></div>
+        <input type="file" id="jsonImportFile" accept=".json" style="display:none">
+        <div class="message" id="addQuestionMsg"></div>
+      </div>
+    </div>
+
+    <!-- تبويب الغرف -->
+    <div class="tab-content" id="tab-rooms">
+      <div class="card">
+        <h2>🏠 إدارة الغرف النشطة</h2>
+        <div class="sub">تعديل أسماء الغرف، مراقبة اللاعبين، وإدارة الإعدادات</div>
+        <div id="roomsListContainer"></div>
+      </div>
+    </div>
+
+    <!-- تبويب اللاعبين -->
+    <div class="tab-content" id="tab-players">
+      <div class="card">
+        <h2>👥 مراقبة اللاعبين</h2>
         <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>اللاعب</th>
-                <th>ID</th>
-                <th>نوع الجهاز</th>
-                <th>الغرفة الحالية</th>
-                <th>الحالة</th>
-                <th>النتيجة</th>
-                <th>آخر ظهور</th>
-                <th>إجراءات</th>
-              </tr>
-            </thead>
-            <tbody id="playersBody">
-              <tr><td colspan="8" class="muted">جاري تحميل اللاعبين...</td></tr>
-            </tbody>
-          </table>
+          <table><thead><tr><th>اللاعب</th><th>المعرف</th><th>الجهاز</th><th>الغرفة</th><th>الحالة</th><th>النتيجة</th><th>آخر ظهور</th><th>إجراءات</th></tr></thead><tbody id="playersBody"></tbody></table>
         </div>
-      </section>
+      </div>
+    </div>
+  </div>
 
-      <!-- تفاصيل الغرف -->
-      <section class="card">
-        <h2>تفاصيل الغرف واللاعبين</h2>
-        <div class="sub">عرض جميع الغرف النشطة وأسماء اللاعبين داخلها</div>
-        <div id="roomsDetails"></div>
-      </section>
+  <!-- نافذة تعديل السؤال -->
+  <div class="modal" id="editModal">
+    <div class="modal-content">
+      <div class="modal-header"><h3>✏️ تعديل السؤال</h3><button class="close-modal" onclick="closeModal()">&times;</button></div>
+      <div><label>السؤال</label><textarea id="editQText" rows="2"></textarea></div>
+      <div style="margin-top:12px"><label>الخيارات (كل خيار في سطر)</label><textarea id="editQOpts" rows="3"></textarea></div>
+      <div style="margin-top:12px"><label>الإجابة الصحيحة</label><input type="text" id="editQAns"></div>
+      <div style="margin-top:12px"><label>التصنيف</label><input type="text" id="editQCat"></div>
+      <div class="actions" style="margin-top:20px"><button class="btn-success" id="saveEditBtn">💾 حفظ التعديلات</button><button class="btn-danger" id="deleteQuestionBtn">🗑️ حذف السؤال</button></div>
+      <div class="message" id="editMsg"></div>
+    </div>
+  </div>
 
-      <section class="card">
-        <div class="two-col">
-          <div>
-            <h2>إضافة سؤال يدوي</h2>
-            <div class="form-box">
-              <label>السؤال</label>
-              <textarea id="qText" placeholder="اكتب السؤال هنا"></textarea>
-              <label style="margin-top:10px">الخيارات (كل خيار في سطر)</label>
-              <textarea id="qOpts" placeholder="الخيار الأول&#10;الخيار الثاني&#10;الخيار الثالث&#10;الخيار الرابع"></textarea>
-              <label style="margin-top:10px">الإجابة الصحيحة</label>
-              <input type="text" id="qAns" placeholder="اكتب نص الإجابة الصحيحة كما هو">
-              <label style="margin-top:10px">التصنيف</label>
-              <input type="text" id="qCat" placeholder="مثال: تاريخ أو رياضة">
-              <div class="actions">
-                <button class="btn-primary" id="addQuestionBtn">إضافة السؤال</button>
-              </div>
-              <div class="message" id="questionMsg"></div>
-            </div>
-          </div>
-          <div>
-            <h2>استيراد جماعي JSON</h2>
-            <div class="form-box">
-              <label>ملف JSON</label>
-              <input type="file" id="importFile" accept="application/json,.json">
-              <div class="mini" style="margin-top:10px">الصيغة المطلوبة: [{"q":"..","opts":[".."],"ans":"..","cat":".."}]</div>
-              <div class="actions">
-                <button class="btn-primary" id="importBtn">استيراد الأسئلة</button>
-              </div>
-              <div class="message" id="importMsg"></div>
-            </div>
-          </div>
-        </div>
-      </section>
+  <!-- نافذة تعديل اسم الغرفة -->
+  <div class="modal" id="renameRoomModal">
+    <div class="modal-content">
+      <div class="modal-header"><h3>✏️ تعديل اسم الغرفة</h3><button class="close-modal" onclick="closeRenameModal()">&times;</button></div>
+      <div><label>الاسم الحالي</label><input type="text" id="currentRoomName" readonly disabled></div>
+      <div style="margin-top:12px"><label>الاسم الجديد</label><input type="text" id="newRoomName" placeholder="أدخل الاسم الجديد للغرفة"></div>
+      <div class="actions" style="margin-top:20px"><button class="btn-primary" id="confirmRenameBtn">تأكيد التعديل</button></div>
+      <div class="message" id="renameMsg"></div>
     </div>
   </div>
 
@@ -253,340 +276,200 @@
       appId: "1:86590365416:web:0d37b3695ec028103ff35d"
     };
 
-    const ADMIN_CREDENTIALS = {
-      username: 'admin',
-      password: '123456'
-    };
-
+    const ADMIN_CREDENTIALS = { username: 'admin', password: '123456' };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-
     const el = id => document.getElementById(id);
-    const state = {
-      settings: { rounds: 10, thinkTime: 15, answerTime: 7 },
-      players: {},
-      rooms: {},
-      banned: {}
-    };
+    
+    let currentEditKey = null;
+    let currentRenameRoom = null;
+    let questionsCache = {};
 
-    function showMessage(target, text, type) {
+    function showMsg(target, text, type) {
       const box = el(target);
-      if(box){
-        box.className = 'message show ' + (type || 'info');
-        box.textContent = text;
-      }
-    }
-
-    function hideOverlayIfLogged() {
-      if (sessionStorage.getItem('adminLoggedIn') === '1') {
-        el('loginOverlay').style.display = 'none';
-      }
-    }
-
-    function deviceLabel(raw) {
-      const text = (raw || '').toLowerCase();
-      if (text.includes('iphone')) return 'iPhone';
-      if (text.includes('ipad')) return 'iPad';
-      if (text.includes('android')) return 'Android';
-      if (text.includes('windows')) return 'Windows';
-      if (text.includes('mac')) return 'Mac';
-      return raw || 'غير معروف';
-    }
-
-    function formatTime(ts) {
-      if (!ts) return '—';
-      try { return new Date(ts).toLocaleString('ar-EG'); } catch(e) { return '—'; }
+      if(box){ box.className = 'message show ' + type; box.textContent = text; setTimeout(() => box.classList.remove('show'), 3000); }
     }
 
     function updateSliderViews() {
       if(el('roundsValue')) el('roundsValue').textContent = el('roundsSlider').value;
       if(el('thinkValue')) el('thinkValue').textContent = el('thinkSlider').value + ' ث';
       if(el('answerValue')) el('answerValue').textContent = el('answerSlider').value + ' ث';
+      if(el('breakValue')) el('breakValue').textContent = el('breakSlider').value + ' ث';
     }
 
-    function renderPlayers() {
-      const body = el('playersBody');
-      const entries = Object.keys(state.players || {});
-      if (!entries.length) {
-        if(body) body.innerHTML = '<tr><td colspan="8" class="muted">لا يوجد لاعبون بعد.</td></tr>';
-        return;
-      }
-      body.innerHTML = entries.map(function(id){
-        const p = state.players[id] || {};
-        const status = p.status === 'online' ? 'online' : 'offline';
-        return `
-          <tr>
-            <td>${p.name || 'بدون اسم'}</td>
-            <td style="font-family:monospace">${id}</td>
-            <td>${deviceLabel(p.deviceType)}</td>
-            <td>${p.room || '—'}</td>
-            <td><span class="tag ${status}">${status === 'online' ? 'متصل' : 'غير متصل'}</span></td>
-            <td>${p.score || 0}</td>
-            <td>${formatTime(p.lastSeen)}</td>
-            <td>
-              <div style="display:flex;gap:8px;flex-wrap:wrap">
-                <button class="btn-warning" onclick="kickPlayer('${id}','${p.room || ''}')">طرد</button>
-                <button class="btn-danger" onclick="banPlayer('${id}')">حظر</button>
-              </div>
-             </td>
-          </tr>`;
-      }).join('');
+    function renderQuestionsList() {
+      const container = el('questionsList');
+      const questions = Object.entries(questionsCache);
+      if(!questions.length){ container.innerHTML = '<div class="muted" style="text-align:center;padding:40px">📭 لا توجد أسئلة. قم بإضافة أسئلة جديدة</div>'; return; }
+      container.innerHTML = questions.map(([key, q]) => `
+        <div class="question-item" data-key="${key}">
+          <div class="question-header"><div class="question-text">📌 ${escapeHtml(q.q)}</div><div class="question-actions"><button class="btn-warning" onclick="openEditModal('${key}')">✏️ تعديل</button><button class="btn-danger" onclick="deleteQuestion('${key}')">🗑️ حذف</button></div></div>
+          <div class="options-preview">${q.opts.map(opt => `<span class="option-badge ${opt === q.ans ? 'correct-badge' : ''}">${escapeHtml(opt)}</span>`).join('')}</div>
+          <div class="question-details">📂 ${escapeHtml(q.cat || 'عام')} | ✅ الإجابة: ${escapeHtml(q.ans)}</div>
+        </div>
+      `).join('');
     }
 
-    function renderRoomsDetails() {
-      const container = el('roomsDetails');
-      if(!container) return;
-      const roomsList = state.rooms || {};
-      const roomEntries = Object.entries(roomsList).filter(([_, data]) => data.players && Object.keys(data.players).length > 0);
-      
-      if(roomEntries.length === 0){
-        container.innerHTML = '<div class="room-details"><div class="sub">لا توجد غرف نشطة حالياً</div></div>';
-        return;
-      }
-      
-      container.innerHTML = roomEntries.map(([roomId, roomData]) => {
-        const players = roomData.players || {};
-        const playersList = Object.entries(players).map(([pid, pData]) => `
-          <div class="room-player-item">
-            <span>👤 ${pData.name || 'لاعب'}</span>
-            <span>⭐ ${pData.score || 0} نقطة</span>
+    function escapeHtml(text){ if(!text) return ''; return String(text).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+    function openEditModal(key){
+      currentEditKey = key;
+      const q = questionsCache[key];
+      if(!q) return;
+      el('editQText').value = q.q || '';
+      el('editQOpts').value = (q.opts || []).join('\n');
+      el('editQAns').value = q.ans || '';
+      el('editQCat').value = q.cat || '';
+      el('editModal').style.display = 'flex';
+    }
+    function closeModal(){ el('editModal').style.display = 'none'; currentEditKey = null; }
+    function closeRenameModal(){ el('renameRoomModal').style.display = 'none'; currentRenameRoom = null; }
+
+    function saveEdit(){
+      if(!currentEditKey) return;
+      const opts = el('editQOpts').value.split('\n').filter(l=>l.trim());
+      if(opts.length<2){ showMsg('editMsg','الرجاء إدخال خيارين على الأقل','error'); return; }
+      const updated = { q:el('editQText').value, opts:opts, ans:el('editQAns').value, cat:el('editQCat').value||'عام', updatedAt:Date.now() };
+      db.ref('questions/'+currentEditKey).update(updated).then(()=>{ showMsg('editMsg','تم التعديل بنجاح','success'); closeModal(); }).catch(e=>showMsg('editMsg',e.message,'error'));
+    }
+
+    function deleteQuestion(key){
+      if(confirm('هل أنت متأكد من حذف هذا السؤال؟')){ db.ref('questions/'+key).remove().then(()=>showMsg('questionManageMsg','تم الحذف','success')).catch(e=>showMsg('questionManageMsg',e.message,'error')); }
+    }
+
+    function addNewQuestion(){
+      const opts = el('newQOpts').value.split('\n').filter(l=>l.trim());
+      if(!el('newQText').value.trim() || opts.length<2 || !el('newQAns').value.trim()){ showMsg('addQuestionMsg','أكمل جميع الحقول','error'); return; }
+      db.ref('questions').push({ q:el('newQText').value, opts:opts, ans:el('newQAns').value, cat:el('newQCat').value||'عام', createdAt:Date.now() }).then(()=>{
+        el('newQText').value=''; el('newQOpts').value=''; el('newQAns').value=''; el('newQCat').value='';
+        showMsg('addQuestionMsg','تمت الإضافة','success');
+      }).catch(e=>showMsg('addQuestionMsg',e.message,'error'));
+    }
+
+    function renderRoomsList(){
+      const container = el('roomsListContainer');
+      db.ref('rooms').once('value', snap=>{
+        const rooms = snap.val() || {};
+        const entries = Object.entries(rooms);
+        if(!entries.length){ container.innerHTML = '<div class="muted" style="text-align:center;padding:40px">🏠 لا توجد غرف نشطة</div>'; return; }
+        container.innerHTML = entries.map(([roomId, room]) => `
+          <div class="room-card">
+            <div class="room-header"><span class="room-name">🏠 ${escapeHtml(room.displayName || roomId)}</span><span class="room-players">👥 ${room.players ? Object.keys(room.players).length : 0} لاعب</span><button class="edit-room-btn" onclick="openRenameModal('${roomId}','${escapeHtml(room.displayName || roomId)}')">✏️ تعديل الاسم</button></div>
+            <div class="room-players-list">${room.players ? Object.values(room.players).map(p=>`<div class="player-item"><span>👤 ${escapeHtml(p.name)}</span><span>⭐ ${p.currentScore||0}</span></div>`).join('') : '<div class="muted">لا يوجد لاعبون</div>'}</div>
+            <div class="actions" style="margin-top:10px"><button class="btn-warning" onclick="forceRoomSettings('${roomId}')">⚙️ فرض إعدادات الإدارة</button><button class="btn-danger" onclick="deleteRoom('${roomId}')">🗑️ حذف الغرفة</button></div>
           </div>
         `).join('');
-        
-        return `
-          <div class="room-details">
-            <h3>🏠 الغرفة: ${roomId} <span style="font-size:14px">(${Object.keys(players).length} لاعب)</span></h3>
-            <div class="room-players-list">
-              ${playersList || '<div class="sub">لا يوجد لاعبون</div>'}
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
-
-    function updateRoomSelect() {
-      const select = el('targetRoomSelect');
-      if(!select) return;
-      const roomsList = state.rooms || {};
-      const roomOptions = ['<option value="all">🌐 جميع الغرف</option>'];
-      Object.keys(roomsList).forEach(roomId => {
-        roomOptions.push(`<option value="${roomId}">🏠 ${roomId}</option>`);
       });
-      select.innerHTML = roomOptions.join('');
     }
 
-    function recalcStats() {
-      const questionsCount = Object.keys(window.questionsCache || {}).length;
-      const players = Object.values(state.players || {});
-      const online = players.filter(p => p.status === 'online').length;
-      const rooms = Object.values(state.rooms || {}).filter(function(r){ return r && r.players && Object.keys(r.players).length > 0; }).length;
-      if(el('totalQuestions')) el('totalQuestions').textContent = questionsCount;
-      if(el('onlinePlayers')) el('onlinePlayers').textContent = online;
-      if(el('activeRooms')) el('activeRooms').textContent = rooms;
-      if(el('bannedCount')) el('bannedCount').textContent = Object.keys(state.banned || {}).length;
+    function openRenameModal(roomId, currentName){
+      currentRenameRoom = roomId;
+      el('currentRoomName').value = currentName;
+      el('newRoomName').value = '';
+      el('renameRoomModal').style.display = 'flex';
     }
 
-    function syncControlsFromSettings(s) {
-      const live = (s && s.live) || s || {};
-      state.settings.rounds = Math.min(30, Math.max(10, Number(live.rounds || s.rounds || 10)));
-      state.settings.thinkTime = Number(live.thinkTime || s.thinkTime || 15);
-      state.settings.answerTime = Number(live.answerTime || s.answerTime || 7);
-      if(el('roundsSlider')) el('roundsSlider').value = state.settings.rounds;
-      if(el('thinkSlider')) el('thinkSlider').value = state.settings.thinkTime;
-      if(el('answerSlider')) el('answerSlider').value = state.settings.answerTime;
-      updateSliderViews();
+    function confirmRename(){
+      if(!currentRenameRoom) return;
+      const newName = el('newRoomName').value.trim();
+      if(!newName){ showMsg('renameMsg','الرجاء إدخال اسم جديد','error'); return; }
+      db.ref('rooms/'+currentRenameRoom+'/displayName').set(newName).then(()=>{
+        showMsg('renameMsg','تم تعديل اسم الغرفة','success');
+        closeRenameModal();
+        renderRoomsList();
+      }).catch(e=>showMsg('renameMsg',e.message,'error'));
     }
 
-    function applyLiveSettings() {
-      const rounds = Math.min(30, Math.max(10, Number(el('roundsSlider').value)));
-      const thinkTime = Number(el('thinkSlider').value);
-      const answerTime = Number(el('answerSlider').value);
-      const timestamp = firebase.database.ServerValue.TIMESTAMP;
-      const updates = {
-        'settings/rounds': rounds,
-        'settings/thinkTime': thinkTime,
-        'settings/answerTime': answerTime,
-        'settings/live/rounds': rounds,
-        'settings/live/thinkTime': thinkTime,
-        'settings/live/answerTime': answerTime,
-        'settings/live/updatedAt': timestamp,
-        'settings/live/updatedBy': 'admin-panel'
-      };
-      Object.keys(state.rooms || {}).forEach(function(roomId){
-        updates['rooms/' + roomId + '/liveSettings/rounds'] = rounds;
-        updates['rooms/' + roomId + '/liveSettings/thinkTime'] = thinkTime;
-        updates['rooms/' + roomId + '/liveSettings/answerTime'] = answerTime;
-        updates['rooms/' + roomId + '/liveSettings/updatedAt'] = timestamp;
+    function forceRoomSettings(roomId){
+      const rounds = parseInt(el('roundsSlider').value);
+      const thinkTime = parseInt(el('thinkSlider').value);
+      const answerTime = parseInt(el('answerSlider').value);
+      const breakTime = parseInt(el('breakSlider').value);
+      db.ref('rooms/'+roomId+'/forcedSettings').set({ rounds, thinkTime, answerTime, breakTime, forcedBy:'admin', forcedAt:Date.now() }).then(()=>{
+        showMsg('settingsMsg','تم فرض الإعدادات على الغرفة '+roomId,'success');
+      }).catch(e=>showMsg('settingsMsg',e.message,'error'));
+    }
+
+    function deleteRoom(roomId){ if(confirm('حذف الغرفة سيؤدي إلى طرد جميع اللاعبين. هل أنت متأكد؟')){ db.ref('rooms/'+roomId).remove().then(()=>renderRoomsList()); } }
+
+    function renderPlayers(){
+      db.ref('players').once('value', snap=>{
+        const players = snap.val() || {};
+        const body = el('playersBody');
+        if(!Object.keys(players).length){ body.innerHTML='<tr><td colspan="8" class="muted">لا يوجد لاعبون</td></tr>'; return; }
+        body.innerHTML = Object.entries(players).map(([id,p])=>`<tr><td>${escapeHtml(p.name)}</td><td style="font-family:monospace">${id}</td><td>${p.deviceType||'—'}</td><td>${p.room||'—'}</td><td><span class="tag ${p.status==='online'?'online':'offline'}">${p.status==='online'?'متصل':'غير متصل'}</span></td><td>${p.score||0}</td><td>${p.lastSeen?new Date(p.lastSeen).toLocaleString('ar-EG'):'—'}</td><td><button class="btn-warning" onclick="kickPlayer('${id}','${p.room||''}')">طرد</button> <button class="btn-danger" onclick="banPlayer('${id}')">حظر</button></td></tr>`).join('');
       });
-      db.ref().update(updates)
-        .then(function(){ showMessage('settingsMsg', 'تم تطبيق الإعدادات الحية على settings/live وعلى الغرف النشطة.', 'success'); })
-        .catch(function(err){ showMessage('settingsMsg', err.message, 'error'); });
     }
 
-    function sendAnnouncement() {
-      const targetRoom = el('targetRoomSelect').value;
-      const message = el('announcementText').value.trim();
-      
-      if(!message){
-        showMessage('announcementMsg', 'الرجاء كتابة رسالة الإعلان أولاً', 'error');
-        return;
-      }
-      
-      const announcementData = {
-        message: message,
-        targetRoom: targetRoom,
-        sentBy: 'admin',
-        sentAt: firebase.database.ServerValue.TIMESTAMP
-      };
-      
+    window.kickPlayer = function(playerId, roomId){ db.ref('players/'+playerId).update({ room:'lobby', kickedAt:Date.now(), kickMessage:'تم طردك من قبل الإدارة' }); if(roomId) db.ref('rooms/'+roomId+'/players/'+playerId).remove(); };
+    window.banPlayer = function(playerId){ db.ref('banned/'+playerId).set({ id:playerId, bannedAt:Date.now(), reason:'حظر من الإدارة' }); db.ref('players/'+playerId).update({ status:'banned' }); };
+
+    function updateRoomSelect(){
+      db.ref('rooms').once('value', snap=>{
+        const rooms = snap.val() || {};
+        const select = el('announceRoomSelect');
+        select.innerHTML = '<option value="all">🌐 جميع الغرف</option>'+Object.keys(rooms).map(r=>`<option value="${r}">🏠 ${rooms[r].displayName || r}</option>`).join('');
+      });
+    }
+
+    function sendAnnouncement(){
+      const targetRoom = el('announceRoomSelect').value;
+      const message = el('announceText').value.trim();
+      if(!message){ showMsg('settingsMsg','اكتب رسالة أولاً','error'); return; }
+      const announceData = { message, targetRoom, sentBy:'admin', sentAt:Date.now() };
       if(targetRoom === 'all'){
-        // إرسال لجميع الغرف
-        const rooms = Object.keys(state.rooms || {});
-        if(rooms.length === 0){
-          showMessage('announcementMsg', 'لا توجد غرف نشطة لإرسال الإعلان', 'error');
-          return;
-        }
-        const updates = {};
-        rooms.forEach(roomId => {
-          updates['announcements/rooms/' + roomId + '/' + Date.now()] = announcementData;
-          updates['announcements/latest'] = {...announcementData, targetRoom: roomId};
-        });
-        db.ref().update(updates).then(() => {
-          showMessage('announcementMsg', 'تم إرسال الإعلان لجميع الغرف بنجاح', 'success');
-          el('announcementText').value = '';
-        }).catch(err => showMessage('announcementMsg', err.message, 'error'));
-      } else {
-        // إرسال لغرفة محددة
-        db.ref('announcements/rooms/' + targetRoom + '/' + Date.now()).set(announcementData).then(() => {
-          db.ref('announcements/latest').set({...announcementData, targetRoom: targetRoom});
-          showMessage('announcementMsg', 'تم إرسال الإعلان للغرفة ' + targetRoom + ' بنجاح', 'success');
-          el('announcementText').value = '';
-        }).catch(err => showMessage('announcementMsg', err.message, 'error'));
-      }
+        db.ref('rooms').once('value', snap=>{ Object.keys(snap.val()||{}).forEach(room=>{ db.ref('announcements/'+room).push(announceData); }); });
+      } else { db.ref('announcements/'+targetRoom).push(announceData); }
+      db.ref('globalAnnouncement').set(announceData);
+      el('announceMarquee').innerHTML = `✨ ${escapeHtml(message)} ✨`;
+      showMsg('settingsMsg','تم إرسال الإعلان','success');
+      el('announceText').value = '';
     }
 
-    function addQuestion() {
-      const q = el('qText').value.trim();
-      const opts = el('qOpts').value.split('\n').map(v => v.trim()).filter(Boolean);
-      const ans = el('qAns').value.trim();
-      const cat = el('qCat').value.trim();
-      if (!q || opts.length < 2 || !ans) {
-        showMessage('questionMsg', 'أكمل السؤال والخيارات والإجابة الصحيحة أولاً.', 'error');
-        return;
-      }
-      db.ref('questions').push({ q:q, opts:opts, ans:ans, cat:cat || 'عام', createdAt: firebase.database.ServerValue.TIMESTAMP })
-        .then(function(){
-          el('qText').value = ''; el('qOpts').value = ''; el('qAns').value = ''; el('qCat').value = '';
-          showMessage('questionMsg', 'تمت إضافة السؤال بنجاح.', 'success');
-        })
-        .catch(function(err){ showMessage('questionMsg', err.message, 'error'); });
+    function applyLiveSettings(){
+      const updates = { 'settings/live/rounds':parseInt(el('roundsSlider').value), 'settings/live/thinkTime':parseInt(el('thinkSlider').value), 'settings/live/answerTime':parseInt(el('answerSlider').value), 'settings/live/breakTime':parseInt(el('breakSlider').value), 'settings/live/soundEffects':el('soundEffect').value, 'settings/live/showScores':el('showScores').value, 'settings/live/updatedAt':Date.now() };
+      db.ref().update(updates).then(()=>showMsg('settingsMsg','تم تطبيق الإعدادات على جميع الغرف','success')).catch(e=>showMsg('settingsMsg',e.message,'error'));
     }
 
-    function importQuestions() {
-      const file = el('importFile').files[0];
-      if (!file) {
-        showMessage('importMsg', 'اختر ملف JSON أولاً.', 'error');
-        return;
-      }
-      const reader = new FileReader();
-      reader.onload = function(ev) {
-        try {
-          const list = JSON.parse(ev.target.result);
-          if (!Array.isArray(list) || !list.length) throw new Error('الملف لا يحتوي على مصفوفة أسئلة صالحة.');
-          const updates = {};
-          let validCount = 0;
-          list.forEach(function(item){
-            if (!item || !item.q || !Array.isArray(item.opts) || !item.opts.length || !item.ans) return;
-            const key = db.ref('questions').push().key;
-            updates[key] = {
-              q: item.q,
-              opts: item.opts,
-              ans: item.ans,
-              cat: item.cat || 'عام',
-              createdAt: Date.now()
-            };
-            validCount++;
-          });
-          if (!validCount) throw new Error('لم يتم العثور على أسئلة مطابقة للصيغة المطلوبة.');
-          db.ref('questions').update(updates)
-            .then(function(){ showMessage('importMsg', 'تم استيراد ' + validCount + ' سؤال بنجاح.', 'success'); })
-            .catch(function(err){ showMessage('importMsg', err.message, 'error'); });
-        } catch (e) {
-          showMessage('importMsg', e.message, 'error');
-        }
-      };
-      reader.readAsText(file, 'utf-8');
+    function initTabs(){
+      document.querySelectorAll('.tab-btn').forEach(btn=>{ btn.addEventListener('click',()=>{
+        document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+        btn.classList.add('active');
+        el('tab-'+btn.dataset.tab).classList.add('active');
+        if(btn.dataset.tab==='rooms') renderRoomsList();
+        if(btn.dataset.tab==='players') renderPlayers();
+        if(btn.dataset.tab==='questions') renderQuestionsList();
+      }); });
     }
 
-    window.banPlayer = function(playerId) {
-      const player = state.players[playerId] || {};
-      const updates = {};
-      updates['banned/' + playerId] = {
-        id: playerId,
-        name: player.name || '',
-        deviceType: player.deviceType || '',
-        bannedAt: firebase.database.ServerValue.TIMESTAMP,
-        reason: 'تم الحظر من لوحة الإدارة'
-      };
-      updates['players/' + playerId + '/status'] = 'banned';
-      updates['players/' + playerId + '/room'] = null;
-      if (player.room) {
-        updates['rooms/' + player.room + '/players/' + playerId] = null;
-      }
-      db.ref().update(updates)
-        .then(function(){ renderPlayers(); recalcStats(); })
-        .catch(function(err){ alert(err.message); });
-    };
-
-    window.kickPlayer = function(playerId, roomId) {
-      const updates = {};
-      updates['players/' + playerId + '/room'] = 'lobby';
-      updates['players/' + playerId + '/kickedAt'] = firebase.database.ServerValue.TIMESTAMP;
-      updates['players/' + playerId + '/kickMessage'] = 'تم طردك من الغرفة الحالية بواسطة الإدارة';
-      if (roomId) updates['rooms/' + roomId + '/players/' + playerId] = null;
-      db.ref().update(updates).catch(function(err){ alert(err.message); });
-    };
-
-    function bindRealtime() {
-      db.ref('settings').on('value', function(snap){ syncControlsFromSettings(snap.val() || {}); });
-      db.ref('players').on('value', function(snap){ state.players = snap.val() || {}; renderPlayers(); recalcStats(); });
-      db.ref('questions').on('value', function(snap){ window.questionsCache = snap.val() || {}; recalcStats(); });
-      db.ref('rooms').on('value', function(snap){ 
-        state.rooms = snap.val() || {}; 
-        recalcStats(); 
-        renderRoomsDetails();
-        updateRoomSelect();
-      });
-      db.ref('banned').on('value', function(snap){ state.banned = snap.val() || {}; recalcStats(); });
+    function bindRealtime(){
+      db.ref('questions').on('value', snap=>{ questionsCache = snap.val()||{}; if(el('tab-questions').classList.contains('active')) renderQuestionsList(); el('totalQuestions').textContent=Object.keys(questionsCache).length; });
+      db.ref('players').on('value', ()=>{ renderPlayers(); db.ref('players').once('value', snap=>{ const players=Object.values(snap.val()||{}); el('onlinePlayers').textContent=players.filter(p=>p.status==='online').length; }); });
+      db.ref('rooms').on('value', ()=>{ updateRoomSelect(); if(el('tab-rooms').classList.contains('active')) renderRoomsList(); db.ref('rooms').once('value', snap=>{ el('activeRooms').textContent=Object.keys(snap.val()||{}).length; }); });
+      db.ref('banned').on('value', snap=>{ el('bannedCount').textContent=Object.keys(snap.val()||{}).length; });
+      db.ref('settings/live').on('value', snap=>{ const s=snap.val()||{}; if(s.rounds) el('roundsSlider').value=s.rounds; if(s.thinkTime) el('thinkSlider').value=s.thinkTime; if(s.answerTime) el('answerSlider').value=s.answerTime; updateSliderViews(); });
+      db.ref('globalAnnouncement').on('value', snap=>{ const a=snap.val(); if(a && a.message) el('announceMarquee').innerHTML = `✨ ${escapeHtml(a.message)} ✨`; });
     }
 
-    function initLogin() {
-      hideOverlayIfLogged();
-      el('loginBtn').addEventListener('click', function(){
-        const user = el('adminUser').value.trim();
-        const pass = el('adminPass').value;
-        if (user === ADMIN_CREDENTIALS.username && pass === ADMIN_CREDENTIALS.password) {
-          sessionStorage.setItem('adminLoggedIn','1');
-          el('loginOverlay').style.display = 'none';
-          showMessage('loginMsg', 'تم تسجيل الدخول.', 'success');
-        } else {
-          showMessage('loginMsg', 'بيانات الدخول غير صحيحة.', 'error');
-        }
-      });
+    function initLogin(){
+      if(sessionStorage.getItem('adminLoggedIn')==='1'){ el('loginOverlay').style.display='none'; bindRealtime(); initTabs(); updateSliderViews(); }
+      el('loginBtn').addEventListener('click',()=>{ if(el('adminUser').value===ADMIN_CREDENTIALS.username && el('adminPass').value===ADMIN_CREDENTIALS.password){ sessionStorage.setItem('adminLoggedIn','1'); location.reload(); } else showMsg('loginMsg','بيانات غير صحيحة','error'); });
     }
 
-    if(el('roundsSlider')) el('roundsSlider').addEventListener('input', updateSliderViews);
-    if(el('thinkSlider')) el('thinkSlider').addEventListener('input', updateSliderViews);
-    if(el('answerSlider')) el('answerSlider').addEventListener('input', updateSliderViews);
-    if(el('applySettingsBtn')) el('applySettingsBtn').addEventListener('click', applyLiveSettings);
-    if(el('reloadSettingsBtn')) el('reloadSettingsBtn').addEventListener('click', function(){ db.ref('settings').once('value').then(function(snap){ syncControlsFromSettings(snap.val() || {}); showMessage('settingsMsg', 'تمت مزامنة القيم من قاعدة البيانات.', 'info'); }); });
-    if(el('addQuestionBtn')) el('addQuestionBtn').addEventListener('click', addQuestion);
-    if(el('importBtn')) el('importBtn').addEventListener('click', importQuestions);
-    if(el('sendAnnouncementBtn')) el('sendAnnouncementBtn').addEventListener('click', sendAnnouncement);
-
+    el('applySettingsBtn').addEventListener('click',applyLiveSettings);
+    el('reloadSettingsBtn').addEventListener('click',()=>db.ref('settings/live').once('value',snap=>{ const s=snap.val()||{}; if(s.rounds) el('roundsSlider').value=s.rounds; if(s.thinkTime) el('thinkSlider').value=s.thinkTime; if(s.answerTime) el('answerSlider').value=s.answerTime; updateSliderViews(); showMsg('settingsMsg','تم التحديث','success'); }));
+    el('addNewQuestionBtn').addEventListener('click',addNewQuestion);
+    el('sendAnnounceBtn').addEventListener('click',sendAnnouncement);
+    el('saveEditBtn').addEventListener('click',saveEdit);
+    el('deleteQuestionBtn').addEventListener('click',()=>{ if(currentEditKey && confirm('حذف السؤال؟')) deleteQuestion(currentEditKey); closeModal(); });
+    el('confirmRenameBtn').addEventListener('click',confirmRename);
+    el('importJsonBtn').addEventListener('click',()=>el('jsonImportFile').click());
+    el('jsonImportFile').addEventListener('change',e=>{ const file=e.target.files[0]; if(file){ const reader=new FileReader(); reader.onload=ev=>{ try{ const list=JSON.parse(ev.target.result); list.forEach(item=>{ if(item.q && item.opts && item.ans) db.ref('questions').push({ q:item.q, opts:item.opts, ans:item.ans, cat:item.cat||'عام', createdAt:Date.now() }); }); showMsg('addQuestionMsg','تم الاستيراد','success'); }catch(e){ showMsg('addQuestionMsg','خطأ في الملف','error'); } }; reader.readAsText(file); } });
+    ['roundsSlider','thinkSlider','answerSlider','breakSlider'].forEach(id=>{ if(el(id)) el(id).addEventListener('input',updateSliderViews); });
     updateSliderViews();
     initLogin();
-    bindRealtime();
+    window.closeModal=closeModal; window.closeRenameModal=closeRenameModal; window.openEditModal=openEditModal; window.deleteQuestion=deleteQuestion; window.openRenameModal=openRenameModal; window.forceRoomSettings=forceRoomSettings; window.deleteRoom=deleteRoom; window.kickPlayer=kickPlayer; window.banPlayer=banPlayer;
   </script>
 </body>
 </html>
