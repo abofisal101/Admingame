@@ -1,85 +1,12 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>لوحة تحكم أبو فيصل</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@700&display=swap" rel="stylesheet">
-    <style>
-        body { background: #0a0a0a; color: white; font-family: 'Cairo', sans-serif; text-align: center; padding: 50px 20px; }
-        .box { background: #151515; border: 2px solid #ff3333; padding: 30px; border-radius: 20px; }
-        input { width: 100%; padding: 15px; margin: 10px 0; border-radius: 10px; border: 1px solid #333; background: #000; color: white; }
-        .btn { background: #e60000; color: white; padding: 15px 30px; border: none; border-radius: 10px; width: 100%; font-weight: bold; cursor: pointer; }
-        #adminPanel { display: none; }
-    </style>
+    <title>فحص الاتصال</title>
 </head>
-<body>
-
-    <div id="loginArea">
-        <h1>🔐 دخول الإدمن</h1>
-        <input type="password" id="adminPass" placeholder="كلمة المرور">
-        <button class="btn" onclick="checkLogin()">دخول</button>
-    </div>
-
-    <div id="adminPanel">
-        <h1>🎮 لوحة التحكم</h1>
-        <div class="box">
-            <input type="text" id="q" placeholder="اكتب السؤال">
-            <input type="text" id="ans" placeholder="الإجابة الصحيحة">
-            <button class="btn" onclick="sendData()">حفظ السؤال</button>
-        </div>
-    </div>
-
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-
-    <script>
-        // رسالة فحص أولية
-        alert("بدء تشغيل اللوحة.. إذا رأيت هذه الرسالة فالكود يعمل");
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyBKs24sqojKX51Q4HAPv3amY1oTGo3YcyA",
-            authDomain: "myquiz-314f9.firebaseapp.com",
-            databaseURL: "https://myquiz-314f9-default-rtdb.firebaseio.com",
-            projectId: "myquiz-314f9",
-            storageBucket: "myquiz-314f9.firebasestorage.app",
-            messagingSenderId: "86590365416",
-            appId: "1:86590365416:web:0d37b3695ec028103ff35d"
-        };
-
-        // تهيئة Firebase
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
-        const database = firebase.database();
-
-        function checkLogin() {
-            const p = document.getElementById('adminPass').value;
-            if(p === "admin123") {
-                document.getElementById('loginArea').style.display = 'none';
-                document.getElementById('adminPanel').style.display = 'block';
-            } else {
-                alert("كلمة المرور خطأ");
-            }
-        }
-
-        function sendData() {
-            const question = document.getElementById('q').value;
-            const answer = document.getElementById('ans').value;
-            if(!question || !answer) return alert("أكمل البيانات");
-
-            database.ref('questions').push({
-                q: question,
-                ans: answer,
-                time: Date.now()
-            }).then(() => {
-                alert("تم الحفظ في Firebase بنجاح ✅");
-                document.getElementById('q').value = "";
-                document.getElementById('ans').value = "";
-            }).catch((error) => {
-                alert("حدث خطأ في الحفظ: " + error.message);
-            });
-        }
-    </script>
+<body style="background: black; color: white; text-align: center; padding-top: 100px;">
+    <h1 style="color: red;">🚨 إذا رأيت هذه الرسالة، فالمشكلة في كود الفايربيس</h1>
+    <p>لوحة تحكم أبو فيصل تعمل الآن كصفحة عادية</p>
+    <button onclick="alert('المتصفح يستجيب!')" style="padding: 20px; font-size: 20px;">اضغط هنا للفحص</button>
 </body>
 </html>
