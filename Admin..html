@@ -2,103 +2,84 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>لوحة تحكم أبو فيصل</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@700&display=swap" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
-        body { background: #0a0a0a; color: white; padding: 20px; padding-top: env(safe-area-inset-top); }
-        .card { background: #151515; border-radius: 20px; padding: 20px; border: 1px solid #333; margin-top: 20px; }
-        h1 { text-align: center; color: #ff3333; margin-bottom: 20px; }
-        input, select { width: 100%; padding: 15px; margin-bottom: 10px; background: #000; border: 1px solid #444; color: white; border-radius: 12px; }
-        .btn { width: 100%; padding: 15px; background: #e60000; border: none; border-radius: 12px; color: white; font-weight: bold; cursor: pointer; }
-        #dashboard { display: none; }
+        body { background: #0a0a0a; color: white; font-family: 'Cairo', sans-serif; text-align: center; padding: 50px 20px; }
+        .box { background: #151515; border: 2px solid #ff3333; padding: 30px; border-radius: 20px; }
+        input { width: 100%; padding: 15px; margin: 10px 0; border-radius: 10px; border: 1px solid #333; background: #000; color: white; }
+        .btn { background: #e60000; color: white; padding: 15px 30px; border: none; border-radius: 10px; width: 100%; font-weight: bold; cursor: pointer; }
+        #adminPanel { display: none; }
     </style>
 </head>
 <body>
 
-    <div id="loginBox">
+    <div id="loginArea">
         <h1>🔐 دخول الإدمن</h1>
-        <input type="text" id="user" placeholder="اسم المستخدم" value="admin">
-        <input type="password" id="pass" placeholder="كلمة المرور" value="admin123">
-        <button class="btn" id="loginBtn">دخول</button>
+        <input type="password" id="adminPass" placeholder="كلمة المرور">
+        <button class="btn" onclick="checkLogin()">دخول</button>
     </div>
 
-    <div id="dashboard">
+    <div id="adminPanel">
         <h1>🎮 لوحة التحكم</h1>
-        <div class="card">
-            <h3>إضافة سؤال جديد</h3>
-            <input type="text" id="q" placeholder="السؤال">
-            <input type="text" id="a" placeholder="خيار 1">
-            <input type="text" id="b" placeholder="خيار 2">
-            <input type="text" id="c" placeholder="خيار 3">
-            <input type="text" id="d" placeholder="خيار 4">
-            <select id="correct">
-                <option value="0">الإجابة: خيار 1</option>
-                <option value="1">الإجابة: خيار 2</option>
-                <option value="2">الإجابة: خيار 3</option>
-                <option value="3">الإجابة: خيار 4</option>
-            </select>
-            <button class="btn" id="addBtn">حفظ السؤال</button>
+        <div class="box">
+            <input type="text" id="q" placeholder="اكتب السؤال">
+            <input type="text" id="ans" placeholder="الإجابة الصحيحة">
+            <button class="btn" onclick="sendData()">حفظ السؤال</button>
         </div>
     </div>
 
-<script type="module">
-    // استدعاء Firebase بنظام الوحدات (أسرع وأضمن للأيفون)
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.10.0/firebase-app.js";
-    import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/9.10.0/firebase-database.js";
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyBKs24sqojKX51Q4HAPv3amY1oTGo3YcyA",
-        authDomain: "myquiz-314f9.firebaseapp.com",
-        databaseURL: "https://myquiz-314f9-default-rtdb.firebaseio.com",
-        projectId: "myquiz-314f9",
-        storageBucket: "myquiz-314f9.firebasestorage.app",
-        messagingSenderId: "86590365416",
-        appId: "1:86590365416:web:0d37b3695ec028103ff35d"
-    };
+    <script>
+        // رسالة فحص أولية
+        alert("بدء تشغيل اللوحة.. إذا رأيت هذه الرسالة فالكود يعمل");
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+        const firebaseConfig = {
+            apiKey: "AIzaSyBKs24sqojKX51Q4HAPv3amY1oTGo3YcyA",
+            authDomain: "myquiz-314f9.firebaseapp.com",
+            databaseURL: "https://myquiz-314f9-default-rtdb.firebaseio.com",
+            projectId: "myquiz-314f9",
+            storageBucket: "myquiz-314f9.firebasestorage.app",
+            messagingSenderId: "86590365416",
+            appId: "1:86590365416:web:0d37b3695ec028103ff35d"
+        };
 
-    // منطق الدخول
-    document.getElementById('loginBtn').onclick = () => {
-        const u = document.getElementById('user').value;
-        const p = document.getElementById('pass').value;
-        if(u === 'admin' && p === 'admin123') {
-            document.getElementById('loginBox').style.display = 'none';
-            document.getElementById('dashboard').style.display = 'block';
-        } else {
-            alert('خطأ في البيانات');
+        // تهيئة Firebase
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
         }
-    };
+        const database = firebase.database();
 
-    // إضافة سؤال
-    document.getElementById('addBtn').onclick = async () => {
-        const question = document.getElementById('q').value;
-        const opts = [
-            document.getElementById('a').value,
-            document.getElementById('b').value,
-            document.getElementById('c').value,
-            document.getElementById('d').value
-        ];
-        const correctIdx = document.getElementById('correct').value;
+        function checkLogin() {
+            const p = document.getElementById('adminPass').value;
+            if(p === "admin123") {
+                document.getElementById('loginArea').style.display = 'none';
+                document.getElementById('adminPanel').style.display = 'block';
+            } else {
+                alert("كلمة المرور خطأ");
+            }
+        }
 
-        if(!question || !opts[0]) return alert('أكمل البيانات');
+        function sendData() {
+            const question = document.getElementById('q').value;
+            const answer = document.getElementById('ans').value;
+            if(!question || !answer) return alert("أكمل البيانات");
 
-        try {
-            await push(ref(db, 'questions'), {
+            database.ref('questions').push({
                 q: question,
-                opts: opts,
-                ans: opts[correctIdx],
+                ans: answer,
                 time: Date.now()
+            }).then(() => {
+                alert("تم الحفظ في Firebase بنجاح ✅");
+                document.getElementById('q').value = "";
+                document.getElementById('ans').value = "";
+            }).catch((error) => {
+                alert("حدث خطأ في الحفظ: " + error.message);
             });
-            alert('✅ تم الحفظ بنجاح');
-            document.getElementById('q').value = "";
-        } catch (e) {
-            alert('فشل الحفظ: ' + e.message);
         }
-    };
-</script>
+    </script>
 </body>
 </html>
