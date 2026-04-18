@@ -1,172 +1,104 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>لوحة التحكم · أبو فيصل</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    body { background: #0a0a0a; font-family: 'Cairo', sans-serif; color: white; min-height: 100vh; padding: 16px; padding-top: env(safe-area-inset-top); }
-    .container { max-width: 500px; margin: 0 auto; }
-    
-    h1 { font-size: 28px; font-weight: 900; background: linear-gradient(135deg, #ff6b6b, #ff1a1a); -webkit-background-clip: text; background-clip: text; color: transparent; text-align: center; margin-bottom: 30px; }
-    
-    /* شاشة الدخول */
-    #loginBox { background: #151515; border-radius: 24px; padding: 30px 20px; border: 1px solid #ff3333; margin-top: 50px; display: block; }
-    input { width: 100%; padding: 16px; background: #0a0a0a; border: 2px solid #333; border-radius: 16px; color: white; font-size: 16px; margin-bottom: 15px; font-family: 'Cairo', sans-serif; }
-    .btn { width: 100%; padding: 16px; background: #e60000; border: none; border-radius: 16px; color: white; font-size: 18px; font-weight: 700; cursor: pointer; }
-    
-    /* لوحة التحكم */
-    #dashboard { display: none; opacity: 0; transition: opacity 0.5s; }
-    #dashboard.active { display: block; opacity: 1; }
-    
-    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
-    .stat { background: #151515; border-radius: 16px; padding: 15px; text-align: center; border: 1px solid #2a2a2a; }
-    .stat .num { font-size: 24px; font-weight: 900; color: #ff4444; }
-    .stat .label { color: #aaa; font-size: 11px; }
-    
-    .card { background: #151515; border-radius: 20px; padding: 18px; border: 1px solid #2a2a2a; margin-bottom: 18px; }
-    h3 { font-size: 18px; margin-bottom: 15px; color: #ff9999; }
-    
-    .btn-small { padding: 10px; border-radius: 12px; font-size: 14px; background: #333; color: white; border: none; width: 100%; margin-top: 10px; font-family: 'Cairo'; }
-    .btn-danger { background: #aa0000; }
-    
-    .toast { position: fixed; bottom: 30px; left: 20px; right: 20px; background: #008800; padding: 15px; border-radius: 15px; text-align: center; z-index: 9999; display: none; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>لوحة تحكم أبو فيصل</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
+        body { background: #0a0a0a; color: white; padding: 20px; padding-top: env(safe-area-inset-top); }
+        .card { background: #151515; border-radius: 20px; padding: 20px; border: 1px solid #333; margin-top: 20px; }
+        h1 { text-align: center; color: #ff3333; margin-bottom: 20px; }
+        input, select { width: 100%; padding: 15px; margin-bottom: 10px; background: #000; border: 1px solid #444; color: white; border-radius: 12px; }
+        .btn { width: 100%; padding: 15px; background: #e60000; border: none; border-radius: 12px; color: white; font-weight: bold; cursor: pointer; }
+        #dashboard { display: none; }
+    </style>
 </head>
 <body>
 
-<div class="container">
-  <div id="loginBox">
-    <h1>🔐 دخول الإدمن</h1>
-    <input type="text" id="username" placeholder="اسم المستخدم" value="admin">
-    <input type="password" id="password" placeholder="كلمة المرور" value="admin123">
-    <button class="btn" onclick="doLogin()">دخول اللوحة</button>
-    <p id="loginError" style="color:red; text-align:center; margin-top:10px;"></p>
-  </div>
-
-  <div id="dashboard">
-    <h1>🎯 لوحة التحكم</h1>
-    <div class="stats">
-      <div class="stat"><div class="num" id="statQuestions">0</div><div class="label">سؤال</div></div>
-      <div class="stat"><div class="num" id="statRooms">0</div><div class="label">غرفة</div></div>
-      <div class="stat"><div class="num" id="statPlayers">0</div><div class="label">لاعب</div></div>
+    <div id="loginBox">
+        <h1>🔐 دخول الإدمن</h1>
+        <input type="text" id="user" placeholder="اسم المستخدم" value="admin">
+        <input type="password" id="pass" placeholder="كلمة المرور" value="admin123">
+        <button class="btn" id="loginBtn">دخول</button>
     </div>
 
-    <div class="card">
-      <h3>➕ أضف لغزاً جديداً</h3>
-      <input type="text" id="qText" placeholder="اكتب السؤال هنا...">
-      <input type="text" id="optA" placeholder="الخيار أ">
-      <input type="text" id="optB" placeholder="الخيار ب">
-      <input type="text" id="optC" placeholder="الخيار ج">
-      <input type="text" id="optD" placeholder="الخيار د">
-      <select id="correctAns" style="width:100%; padding:15px; background:#0a0a0a; color:white; border-radius:15px; border:1px solid #333; margin-bottom:10px; font-family:'Cairo';">
-        <option value="0">الإجابة هي: أ</option>
-        <option value="1">الإجابة هي: ب</option>
-        <option value="2">الإجابة هي: ج</option>
-        <option value="3">الإجابة هي: د</option>
-      </select>
-      <button class="btn" onclick="addQuestion()">💾 حفظ السؤال في السحابة</button>
+    <div id="dashboard">
+        <h1>🎮 لوحة التحكم</h1>
+        <div class="card">
+            <h3>إضافة سؤال جديد</h3>
+            <input type="text" id="q" placeholder="السؤال">
+            <input type="text" id="a" placeholder="خيار 1">
+            <input type="text" id="b" placeholder="خيار 2">
+            <input type="text" id="c" placeholder="خيار 3">
+            <input type="text" id="d" placeholder="خيار 4">
+            <select id="correct">
+                <option value="0">الإجابة: خيار 1</option>
+                <option value="1">الإجابة: خيار 2</option>
+                <option value="2">الإجابة: خيار 3</option>
+                <option value="3">الإجابة: خيار 4</option>
+            </select>
+            <button class="btn" id="addBtn">حفظ السؤال</button>
+        </div>
     </div>
 
-    <button class="btn-small btn-danger" onclick="doLogout()">🚪 تسجيل خروج</button>
-  </div>
-</div>
+<script type="module">
+    // استدعاء Firebase بنظام الوحدات (أسرع وأضمن للأيفون)
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.10.0/firebase-app.js";
+    import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/9.10.0/firebase-database.js";
 
-<div id="toast" class="toast">✅ تم الحفظ بنجاح</div>
+    const firebaseConfig = {
+        apiKey: "AIzaSyBKs24sqojKX51Q4HAPv3amY1oTGo3YcyA",
+        authDomain: "myquiz-314f9.firebaseapp.com",
+        databaseURL: "https://myquiz-314f9-default-rtdb.firebaseio.com",
+        projectId: "myquiz-314f9",
+        storageBucket: "myquiz-314f9.firebasestorage.app",
+        messagingSenderId: "86590365416",
+        appId: "1:86590365416:web:0d37b3695ec028103ff35d"
+    };
 
-<script>
-  // بيانات Firebase الخاصة بك (لا تغيرها)
-  const firebaseConfig = {
-    apiKey: "AIzaSyBKs24sqojKX51Q4HAPv3amY1oTGo3YcyA",
-    authDomain: "myquiz-314f9.firebaseapp.com",
-    databaseURL: "https://myquiz-314f9-default-rtdb.firebaseio.com",
-    projectId: "myquiz-314f9",
-    storageBucket: "myquiz-314f9.firebasestorage.app",
-    messagingSenderId: "86590365416",
-    appId: "1:86590365416:web:0d37b3695ec028103ff35d"
-  };
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
-  // محاولة التهيئة والتأكد من عدم التكرار
-  if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
-  }
-  const db = firebase.database();
+    // منطق الدخول
+    document.getElementById('loginBtn').onclick = () => {
+        const u = document.getElementById('user').value;
+        const p = document.getElementById('pass').value;
+        if(u === 'admin' && p === 'admin123') {
+            document.getElementById('loginBox').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
+        } else {
+            alert('خطأ في البيانات');
+        }
+    };
 
-  function doLogin() {
-    const u = document.getElementById('username').value;
-    const p = document.getElementById('password').value;
-    if(u === 'admin' && p === 'admin123') {
-      showDashboard();
-      localStorage.setItem('isLogged', 'true');
-    } else {
-      document.getElementById('loginError').innerText = "بيانات الدخول غير صحيحة";
-    }
-  }
+    // إضافة سؤال
+    document.getElementById('addBtn').onclick = async () => {
+        const question = document.getElementById('q').value;
+        const opts = [
+            document.getElementById('a').value,
+            document.getElementById('b').value,
+            document.getElementById('c').value,
+            document.getElementById('d').value
+        ];
+        const correctIdx = document.getElementById('correct').value;
 
-  function showDashboard() {
-    document.getElementById('loginBox').style.display = 'none';
-    const dash = document.getElementById('dashboard');
-    dash.style.display = 'block';
-    setTimeout(() => dash.classList.add('active'), 50);
-    startSync();
-  }
+        if(!question || !opts[0]) return alert('أكمل البيانات');
 
-  function startSync() {
-    // مزامنة الأسئلة
-    db.ref('questions').on('value', snap => {
-      document.getElementById('statQuestions').innerText = snap.numChildren();
-    });
-    // مزامنة الغرف
-    db.ref('rooms').on('value', snap => {
-      document.getElementById('statRooms').innerText = snap.numChildren();
-    });
-  }
-
-  function addQuestion() {
-    const q = document.getElementById('qText').value;
-    const a = document.getElementById('optA').value;
-    const b = document.getElementById('optB').value;
-    const c = document.getElementById('optC').value;
-    const d = document.getElementById('optD').value;
-    const correctIdx = parseInt(document.getElementById('correctAns').value);
-    
-    if(!q || !a || !b) return alert("أكمل البيانات أولاً");
-
-    const opts = [a, b, c, d];
-    db.ref('questions').push({
-      q: q,
-      opts: opts,
-      ans: opts[correctIdx],
-      cat: "عام",
-      time: Date.now()
-    }).then(() => {
-      showToast();
-      document.getElementById('qText').value = "";
-      document.getElementById('optA').value = "";
-      document.getElementById('optB').value = "";
-      document.getElementById('optC').value = "";
-      document.getElementById('optD').value = "";
-    });
-  }
-
-  function showToast() {
-    const t = document.getElementById('toast');
-    t.style.display = 'block';
-    setTimeout(() => t.style.display = 'none', 2000);
-  }
-
-  function doLogout() {
-    localStorage.removeItem('isLogged');
-    location.reload();
-  }
-
-  // فحص تسجيل الدخول عند الفتح
-  if(localStorage.getItem('isLogged') === 'true') showDashboard();
+        try {
+            await push(ref(db, 'questions'), {
+                q: question,
+                opts: opts,
+                ans: opts[correctIdx],
+                time: Date.now()
+            });
+            alert('✅ تم الحفظ بنجاح');
+            document.getElementById('q').value = "";
+        } catch (e) {
+            alert('فشل الحفظ: ' + e.message);
+        }
+    };
 </script>
-
 </body>
 </html>
