@@ -2,405 +2,357 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>🎯 لوحة التحكم · 5000 لغز</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>لوحة التحكم · الألغاز</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    body { background: #0a0a0a; font-family: 'Cairo', sans-serif; color: white; min-height: 100vh; padding: 12px; }
-    .app { max-width: 600px; margin: 0 auto; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #0a0a0a; font-family: 'Cairo', sans-serif; color: white; padding: 16px; min-height: 100vh; }
+    .container { max-width: 500px; margin: 0 auto; }
     
-    /* شاشة تسجيل الدخول */
-    #loginScreen { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
-    .login-card { background: #151515; border-radius: 32px; padding: 30px 20px; border: 2px solid #ff3333; width: 100%; text-align: center; box-shadow: 0 0 40px rgba(255,0,0,0.2); }
-    .login-card h1 { font-size: 28px; font-weight: 900; background: linear-gradient(135deg, #ff6b6b, #ff1a1a); -webkit-background-clip: text; background-clip: text; color: transparent; margin-bottom: 25px; }
-    .login-input { width: 100%; padding: 16px; background: #0a0a0a; border: 2px solid #333; border-radius: 16px; color: white; font-size: 16px; margin-bottom: 14px; font-family: 'Cairo', sans-serif; }
-    .login-input:focus { border-color: #ff4444; outline: none; }
-    .login-btn { width: 100%; padding: 16px; background: #e60000; border: none; border-radius: 16px; color: white; font-size: 18px; font-weight: 700; cursor: pointer; font-family: 'Cairo', sans-serif; }
-    .login-error { color: #ff4444; margin-top: 14px; font-size: 14px; }
+    /* شاشة الدخول */
+    #loginBox { background: #151515; border-radius: 24px; padding: 30px 20px; border: 2px solid #ff3333; margin-top: 50px; }
+    h1 { font-size: 28px; font-weight: 900; background: linear-gradient(135deg, #ff6b6b, #ff1a1a); -webkit-background-clip: text; background-clip: text; color: transparent; text-align: center; margin-bottom: 30px; }
+    input { width: 100%; padding: 16px; background: #0a0a0a; border: 2px solid #333; border-radius: 16px; color: white; font-size: 16px; margin-bottom: 15px; font-family: 'Cairo', sans-serif; }
+    input:focus { border-color: #ff4444; outline: none; }
+    .btn { width: 100%; padding: 16px; background: #e60000; border: none; border-radius: 16px; color: white; font-size: 18px; font-weight: 700; cursor: pointer; font-family: 'Cairo', sans-serif; margin-top: 10px; }
+    .btn-secondary { background: #333; }
+    .error { color: #ff4444; text-align: center; margin-top: 15px; }
     
     /* لوحة التحكم */
-    #dashboardScreen { display: none; }
+    #dashboard { display: none; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .header h2 { font-size: 22px; color: #ff4444; }
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+    .stat { background: #151515; border-radius: 16px; padding: 15px; text-align: center; border: 1px solid #2a2a2a; }
+    .stat .num { font-size: 28px; font-weight: 900; color: #ff4444; }
+    .stat .label { color: #aaa; font-size: 12px; }
     
-    .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
-    .header h1 { font-size: 22px; font-weight: 900; background: linear-gradient(135deg, #ff6b6b, #ff1a1a); -webkit-background-clip: text; background-clip: text; color: transparent; }
-    .header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .card { background: #151515; border-radius: 20px; padding: 18px; border: 1px solid #2a2a2a; margin-bottom: 18px; }
+    .card h3 { font-size: 18px; margin-bottom: 15px; color: #ff9999; }
     
-    .btn { padding: 10px 14px; border-radius: 12px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: 'Cairo', sans-serif; border: none; background: #222; color: white; border: 1px solid #444; }
-    .btn-primary { background: #e60000; color: white; border-color: #ff3333; }
-    .btn-danger { background: #550000; color: #ff9999; border-color: #ff4444; }
-    .btn-success { background: #006600; color: white; }
-    .btn-sm { padding: 8px 12px; font-size: 12px; }
+    .form-row { margin-bottom: 12px; }
+    .form-row label { display: block; color: #aaa; margin-bottom: 5px; font-size: 13px; }
+    .form-row input, .form-row select { width: 100%; padding: 14px; background: #0a0a0a; border: 1px solid #333; border-radius: 14px; color: white; font-size: 15px; font-family: 'Cairo', sans-serif; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     
-    .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
-    .stat-card { background: #151515; border-radius: 16px; padding: 15px 10px; border: 1px solid #2a2a2a; text-align: center; }
-    .stat-value { font-size: 28px; font-weight: 900; color: #ff4444; }
-    .stat-label { color: #aaa; font-size: 12px; margin-top: 5px; }
+    .slider-row { margin-bottom: 18px; }
+    .slider-row label { display: flex; justify-content: space-between; }
+    input[type="range"] { width: 100%; accent-color: #ff1a1a; }
     
-    .section-title { font-size: 18px; font-weight: 700; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
-    .card { background: #151515; border-radius: 20px; padding: 18px 14px; border: 1px solid #2a2a2a; margin-bottom: 18px; }
+    .question-item { background: #1a1a1a; border-radius: 14px; padding: 12px; margin-bottom: 10px; border: 1px solid #333; }
+    .question-item p { margin-bottom: 8px; font-size: 14px; }
+    .question-meta { display: flex; gap: 15px; color: #aaa; font-size: 12px; margin-bottom: 10px; }
+    .question-actions { display: flex; gap: 8px; }
+    .btn-small { padding: 8px 16px; border-radius: 10px; font-size: 13px; cursor: pointer; border: none; font-family: 'Cairo', sans-serif; background: #333; color: white; }
+    .btn-edit { background: #0066aa; }
+    .btn-delete { background: #aa0000; }
     
-    /* نموذج الإضافة */
-    .form-group { margin-bottom: 14px; }
-    .form-group label { display: block; color: #aaa; margin-bottom: 6px; font-size: 13px; }
-    .form-group input, .form-group select { width: 100%; padding: 14px; background: #0a0a0a; border: 1px solid #333; border-radius: 14px; color: white; font-size: 15px; font-family: 'Cairo', sans-serif; }
-    .form-group input:focus, .form-group select:focus { border-color: #ff4444; outline: none; }
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    
-    /* إعدادات */
-    .slider-item { margin-bottom: 18px; }
-    .slider-item label { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; }
-    input[type="range"] { width: 100%; accent-color: #ff1a1a; height: 6px; }
-    
-    /* جدول الأسئلة */
-    .table-container { max-height: 350px; overflow-y: auto; border-radius: 14px; }
-    .questions-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-    .questions-table th { background: #1a1a1a; padding: 12px 8px; text-align: right; color: #ff9999; font-weight: 700; position: sticky; top: 0; }
-    .questions-table td { padding: 10px 8px; border-bottom: 1px solid #2a2a2a; }
-    .action-buttons { display: flex; gap: 4px; }
-    .icon-btn { background: none; border: none; color: #aaa; cursor: pointer; font-size: 16px; padding: 4px 6px; }
-    
-    /* مودال */
     .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.95); z-index: 1000; padding: 16px; overflow-y: auto; }
-    .modal.active { display: flex; align-items: center; justify-content: center; }
-    .modal-content { background: #151515; border-radius: 24px; padding: 20px; width: 100%; max-width: 500px; border: 2px solid #ff3333; max-height: 90vh; overflow-y: auto; }
-    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
-    .modal-title { font-size: 20px; font-weight: 700; }
-    .close-btn { background: none; border: none; color: #aaa; font-size: 26px; cursor: pointer; }
+    .modal.active { display: block; }
+    .modal-content { background: #151515; border-radius: 24px; padding: 20px; max-width: 500px; margin: 20px auto; border: 2px solid #ff3333; }
+    .modal-header { display: flex; justify-content: space-between; margin-bottom: 20px; }
+    .close-btn { background: none; border: none; color: white; font-size: 24px; cursor: pointer; }
     
-    .toast { position: fixed; bottom: 20px; left: 20px; right: 20px; background: #333; padding: 14px 20px; border-radius: 14px; color: white; z-index: 2000; text-align: center; animation: slideIn 0.3s; }
-    .toast.success { background: #006600; }
-    .toast.error { background: #8b0000; }
-    @keyframes slideIn { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-    
-    .refresh-hint { color: #aaa; font-size: 12px; margin-top: 8px; text-align: left; }
-    .empty-state { text-align: center; padding: 30px; color: #aaa; }
+    .toast { position: fixed; bottom: 20px; left: 20px; right: 20px; background: #006600; padding: 14px; border-radius: 14px; text-align: center; z-index: 2000; }
   </style>
 </head>
 <body>
-<div class="app">
+<div class="container">
   <!-- شاشة تسجيل الدخول -->
-  <div id="loginScreen">
-    <div class="login-card">
-      <h1>🔐 لوحة التحكم</h1>
-      <input type="text" id="usernameInput" class="login-input" placeholder="اسم المستخدم" value="admin">
-      <input type="password" id="passwordInput" class="login-input" placeholder="كلمة المرور" value="admin123">
-      <button class="login-btn" onclick="login()">دخول</button>
-      <div class="login-error" id="loginError"></div>
-    </div>
+  <div id="loginBox">
+    <h1>🔐 دخول المشرف</h1>
+    <input type="text" id="username" placeholder="اسم المستخدم" value="admin">
+    <input type="password" id="password" placeholder="كلمة المرور" value="admin123">
+    <button class="btn" onclick="doLogin()">دخول</button>
+    <div id="loginError" class="error"></div>
   </div>
 
   <!-- لوحة التحكم -->
-  <div id="dashboardScreen">
+  <div id="dashboard">
     <div class="header">
-      <h1>🎮 لوحة التحكم</h1>
-      <div class="header-actions">
-        <button class="btn btn-danger btn-sm" onclick="resetGame()">🔄 إعادة ضبط</button>
-        <button class="btn btn-sm" onclick="logout()">🚪 خروج</button>
-      </div>
+      <h2>🎮 لوحة التحكم</h2>
+      <button class="btn-small" onclick="doLogout()">🚪 خروج</button>
     </div>
     
     <!-- إحصائيات -->
-    <div class="stats-grid">
-      <div class="stat-card"><div class="stat-value" id="totalQuestions">0</div><div class="stat-label">سؤال</div></div>
-      <div class="stat-card"><div class="stat-value" id="activeRooms">0</div><div class="stat-label">غرفة</div></div>
-      <div class="stat-card"><div class="stat-value" id="onlinePlayers">0</div><div class="stat-label">لاعب</div></div>
-    </div>
-    
-    <!-- إضافة سؤال -->
-    <div class="card">
-      <div class="section-title"><span>➕</span> إضافة سؤال</div>
-      <div class="form-group"><label>السؤال</label><input type="text" id="newQuestion" placeholder="أدخل السؤال..."></div>
-      <div class="form-row">
-        <div class="form-group"><label>أ</label><input type="text" id="newOptA" placeholder="الخيار الأول"></div>
-        <div class="form-group"><label>ب</label><input type="text" id="newOptB" placeholder="الخيار الثاني"></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label>ج</label><input type="text" id="newOptC" placeholder="الخيار الثالث"></div>
-        <div class="form-group"><label>د</label><input type="text" id="newOptD" placeholder="الخيار الرابع"></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label>الإجابة</label><select id="newCorrect"><option value="A">أ</option><option value="B">ب</option><option value="C">ج</option><option value="D">د</option></select></div>
-        <div class="form-group"><label>التصنيف</label><input type="text" id="newCategory" placeholder="دينية، رياضة..."></div>
-      </div>
-      <button class="btn btn-primary" onclick="addQuestion()" style="width:100%;">💾 حفظ السؤال</button>
+    <div class="stats">
+      <div class="stat"><div class="num" id="statQuestions">0</div><div class="label">سؤال</div></div>
+      <div class="stat"><div class="num" id="statRooms">0</div><div class="label">غرفة</div></div>
+      <div class="stat"><div class="num" id="statPlayers">0</div><div class="label">لاعب</div></div>
     </div>
     
     <!-- إعدادات -->
     <div class="card">
-      <div class="section-title"><span>⚙️</span> الإعدادات العامة</div>
-      <div class="slider-item"><label>🔴 الجولات <span id="defRoundsVal">10</span></label><input type="range" id="defRoundsSlider" min="5" max="30" value="10"></div>
-      <div class="slider-item"><label>⏳ وقت التفكير <span id="defThinkVal">15</span> ث</label><input type="range" id="defThinkSlider" min="5" max="45" value="15"></div>
-      <div class="slider-item"><label>🕒 عرض الإجابة <span id="defViewVal">3</span> ث</label><input type="range" id="defViewSlider" min="2" max="10" value="3"></div>
-      <button class="btn btn-primary" onclick="saveGlobalSettings()" style="width:100%;">💾 حفظ الإعدادات</button>
+      <h3>⚙️ إعدادات اللعبة</h3>
+      <div class="slider-row"><label>🔴 عدد الجولات <span id="roundsVal">10</span></label><input type="range" id="roundsSlider" min="5" max="30" value="10"></div>
+      <div class="slider-row"><label>⏳ وقت التفكير <span id="thinkVal">15</span> ث</label><input type="range" id="thinkSlider" min="5" max="45" value="15"></div>
+      <div class="slider-row"><label>🕒 عرض الإجابة <span id="viewVal">3</span> ث</label><input type="range" id="viewSlider" min="2" max="10" value="3"></div>
+      <button class="btn-small" onclick="saveSettings()" style="width:100%; margin-top:10px;">💾 حفظ الإعدادات</button>
+      <button class="btn-small btn-delete" onclick="resetGame()" style="width:100%; margin-top:8px;">🔄 إعادة ضبط اللعبة</button>
     </div>
     
-    <!-- جدول الأسئلة -->
+    <!-- إضافة سؤال -->
     <div class="card">
-      <div class="section-title"><span>📋</span> إدارة الأسئلة</div>
-      <div class="table-container">
-        <table class="questions-table" id="questionsTable">
-          <thead><tr><th>السؤال</th><th>ج</th><th>ت</th><th></th></tr></thead>
-          <tbody id="questionsTableBody"></tbody>
-        </table>
+      <h3>➕ إضافة سؤال جديد</h3>
+      <div class="form-row"><input type="text" id="qText" placeholder="السؤال"></div>
+      <div class="form-grid">
+        <input type="text" id="optA" placeholder="الخيار أ">
+        <input type="text" id="optB" placeholder="الخيار ب">
+        <input type="text" id="optC" placeholder="الخيار ج">
+        <input type="text" id="optD" placeholder="الخيار د">
       </div>
-      <div class="refresh-hint">↓ اسحب للأسفل للتحديث</div>
+      <div class="form-grid" style="margin-top:10px;">
+        <select id="correctAns"><option value="0">الإجابة: أ</option><option value="1">الإجابة: ب</option><option value="2">الإجابة: ج</option><option value="3">الإجابة: د</option></select>
+        <input type="text" id="qCat" placeholder="التصنيف" value="متنوع">
+      </div>
+      <button class="btn-small" onclick="addQuestion()" style="width:100%; margin-top:12px;">💾 حفظ السؤال</button>
+    </div>
+    
+    <!-- قائمة الأسئلة -->
+    <div class="card">
+      <h3>📋 الأسئلة (آخر 20)</h3>
+      <div id="questionsList"></div>
     </div>
   </div>
   
-  <!-- مودال التعديل -->
+  <!-- مودال تعديل -->
   <div class="modal" id="editModal">
     <div class="modal-content">
-      <div class="modal-header"><div class="modal-title">✏️ تعديل السؤال</div><button class="close-btn" onclick="closeEditModal()">&times;</button></div>
-      <input type="hidden" id="editQuestionId">
-      <div class="form-group"><label>السؤال</label><input type="text" id="editQuestion"></div>
-      <div class="form-row">
-        <div class="form-group"><label>أ</label><input type="text" id="editOptA"></div>
-        <div class="form-group"><label>ب</label><input type="text" id="editOptB"></div>
+      <div class="modal-header"><h3>✏️ تعديل السؤال</h3><button class="close-btn" onclick="closeModal()">&times;</button></div>
+      <input type="hidden" id="editId">
+      <div class="form-row"><input type="text" id="editQText" placeholder="السؤال"></div>
+      <div class="form-grid">
+        <input type="text" id="editOptA" placeholder="أ">
+        <input type="text" id="editOptB" placeholder="ب">
+        <input type="text" id="editOptC" placeholder="ج">
+        <input type="text" id="editOptD" placeholder="د">
       </div>
-      <div class="form-row">
-        <div class="form-group"><label>ج</label><input type="text" id="editOptC"></div>
-        <div class="form-group"><label>د</label><input type="text" id="editOptD"></div>
+      <div class="form-grid" style="margin-top:10px;">
+        <select id="editCorrect"><option value="0">أ</option><option value="1">ب</option><option value="2">ج</option><option value="3">د</option></select>
+        <input type="text" id="editCat" placeholder="التصنيف">
       </div>
-      <div class="form-row">
-        <div class="form-group"><label>الإجابة</label><select id="editCorrect"><option value="A">أ</option><option value="B">ب</option><option value="C">ج</option><option value="D">د</option></select></div>
-        <div class="form-group"><label>التصنيف</label><input type="text" id="editCategory"></div>
-      </div>
-      <button class="btn btn-primary" onclick="updateQuestion()" style="width:100%;">💾 حفظ التعديلات</button>
+      <button class="btn-small" onclick="updateQuestion()" style="width:100%; margin-top:15px;">💾 حفظ التعديلات</button>
     </div>
   </div>
 </div>
 
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
 <script>
-  // ==================== Firebase ====================
-  firebase.initializeApp({apiKey:"AIzaSyBKs24sqojKX51Q4HAPv3amY1oTGo3YcyA",authDomain:"myquiz-314f9.firebaseapp.com",databaseURL:"https://myquiz-314f9-default-rtdb.firebaseio.com",projectId:"myquiz-314f9",storageBucket:"myquiz-314f9.firebasestorage.app",messagingSenderId:"86590365416",appId:"1:86590365416:web:0d37b3695ec028103ff35d"});
+  // تهيئة Firebase
+  const firebaseConfig = {
+    apiKey: "AIzaSyBKs24sqojKX51Q4HAPv3amY1oTGo3YcyA",
+    authDomain: "myquiz-314f9.firebaseapp.com",
+    databaseURL: "https://myquiz-314f9-default-rtdb.firebaseio.com",
+    projectId: "myquiz-314f9",
+    storageBucket: "myquiz-314f9.firebasestorage.app",
+    messagingSenderId: "86590365416",
+    appId: "1:86590365416:web:0d37b3695ec028103ff35d"
+  };
+  
+  firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
   
-  const ADMIN_CONFIG = { username: 'admin', password: 'admin123' };
+  // بيانات الدخول
+  const ADMIN = { user: 'admin', pass: 'admin123' };
   let allQuestions = [];
   
   // ==================== تسجيل الدخول ====================
-  window.login = function() {
-    const username = document.getElementById('usernameInput').value.trim();
-    const password = document.getElementById('passwordInput').value;
+  window.doLogin = function() {
+    const user = document.getElementById('username').value.trim();
+    const pass = document.getElementById('password').value;
     
-    if(username === ADMIN_CONFIG.username && password === ADMIN_CONFIG.password) {
-      document.getElementById('loginScreen').style.display = 'none';
-      document.getElementById('dashboardScreen').style.display = 'block';
-      localStorage.setItem('adminLoggedIn', 'true');
+    if(user === ADMIN.user && pass === ADMIN.pass) {
+      document.getElementById('loginBox').style.display = 'none';
+      document.getElementById('dashboard').style.display = 'block';
+      localStorage.setItem('adminAuth', 'true');
       loadDashboard();
     } else {
       document.getElementById('loginError').innerText = 'خطأ في اسم المستخدم أو كلمة المرور';
     }
   };
   
-  window.logout = function() {
-    localStorage.removeItem('adminLoggedIn');
-    document.getElementById('loginScreen').style.display = 'flex';
-    document.getElementById('dashboardScreen').style.display = 'none';
-    document.getElementById('usernameInput').value = '';
-    document.getElementById('passwordInput').value = '';
+  window.doLogout = function() {
+    localStorage.removeItem('adminAuth');
+    document.getElementById('loginBox').style.display = 'block';
+    document.getElementById('dashboard').style.display = 'none';
   };
   
   // تحقق تلقائي
-  if(localStorage.getItem('adminLoggedIn') === 'true') {
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('dashboardScreen').style.display = 'block';
+  if(localStorage.getItem('adminAuth') === 'true') {
+    document.getElementById('loginBox').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
     loadDashboard();
   }
   
   // ==================== تحميل البيانات ====================
   function loadDashboard() {
-    loadQuestions();
-    loadStats();
-    loadGlobalSettings();
-  }
-  
-  function loadQuestions() {
-    db.ref('questions').on('value', snapshot => {
-      allQuestions = [];
-      const data = snapshot.val() || {};
-      Object.entries(data).forEach(([id, q]) => { allQuestions.push({ id, ...q }); });
-      document.getElementById('totalQuestions').innerText = allQuestions.length;
-      renderQuestionsTable();
+    // تحميل الأسئلة
+    db.ref('questions').on('value', snap => {
+      const data = snap.val() || {};
+      allQuestions = Object.entries(data).map(([id, q]) => ({ id, ...q }));
+      document.getElementById('statQuestions').innerText = allQuestions.length;
+      renderQuestions();
     });
+    
+    // تحميل الإحصائيات
+    db.ref('rooms').on('value', snap => {
+      const rooms = snap.val() || {};
+      let players = 0;
+      Object.values(rooms).forEach(r => { if(r.players) players += Object.keys(r.players).length; });
+      document.getElementById('statRooms').innerText = Object.keys(rooms).length;
+      document.getElementById('statPlayers').innerText = players;
+    });
+    
+    // تحميل الإعدادات
+    db.ref('settings/global').on('value', snap => {
+      const s = snap.val() || { defaultRounds: 10, defaultThinkTime: 15, defaultViewTime: 3 };
+      document.getElementById('roundsSlider').value = s.defaultRounds;
+      document.getElementById('thinkSlider').value = s.defaultThinkTime;
+      document.getElementById('viewSlider').value = s.defaultViewTime;
+      document.getElementById('roundsVal').innerText = s.defaultRounds;
+      document.getElementById('thinkVal').innerText = s.defaultThinkTime;
+      document.getElementById('viewVal').innerText = s.defaultViewTime;
+    });
+    
+    document.getElementById('roundsSlider').oninput = function() { document.getElementById('roundsVal').innerText = this.value; };
+    document.getElementById('thinkSlider').oninput = function() { document.getElementById('thinkVal').innerText = this.value; };
+    document.getElementById('viewSlider').oninput = function() { document.getElementById('viewVal').innerText = this.value; };
   }
   
-  function renderQuestionsTable() {
-    const tbody = document.getElementById('questionsTableBody');
-    if(allQuestions.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:30px;">لا توجد أسئلة، أضف سؤالاً جديداً</td></tr>';
+  function renderQuestions() {
+    const container = document.getElementById('questionsList');
+    const recent = allQuestions.slice(-20).reverse();
+    
+    if(recent.length === 0) {
+      container.innerHTML = '<p style="color:#aaa; text-align:center; padding:20px;">لا توجد أسئلة بعد</p>';
       return;
     }
     
-    tbody.innerHTML = allQuestions.slice(0, 50).map(q => `
-      <tr>
-        <td>${q.q?.substring(0, 25)}${q.q?.length > 25 ? '...' : ''}</td>
-        <td>${q.cat || '-'}</td>
-        <td>${q.ans?.substring(0, 10) || '-'}</td>
-        <td><div class="action-buttons">
-          <button class="icon-btn" onclick="editQuestion('${q.id}')">✏️</button>
-          <button class="icon-btn" onclick="deleteQuestion('${q.id}')">🗑️</button>
-        </div></td>
-      </tr>
+    container.innerHTML = recent.map(q => `
+      <div class="question-item">
+        <p><strong>${q.q || 'بدون سؤال'}</strong></p>
+        <div class="question-meta">
+          <span>📁 ${q.cat || 'متنوع'}</span>
+          <span>✓ ${q.ans || ''}</span>
+        </div>
+        <div class="question-actions">
+          <button class="btn-small btn-edit" onclick='editQuestion(${JSON.stringify(q)})'>✏️ تعديل</button>
+          <button class="btn-small btn-delete" onclick="deleteQuestion('${q.id}')">🗑️ حذف</button>
+        </div>
+      </div>
     `).join('');
-    
-    if(allQuestions.length > 50) {
-      tbody.innerHTML += `<tr><td colspan="4" style="text-align:center;padding:10px;color:#aaa;">و ${allQuestions.length - 50} سؤال آخر...</td></tr>`;
-    }
-  }
-  
-  function loadStats() {
-    db.ref('rooms').on('value', snapshot => {
-      const rooms = snapshot.val() || {};
-      const activeRooms = Object.keys(rooms).length;
-      let onlinePlayers = 0;
-      Object.values(rooms).forEach(room => {
-        if(room.players) onlinePlayers += Object.keys(room.players).length;
-      });
-      document.getElementById('activeRooms').innerText = activeRooms;
-      document.getElementById('onlinePlayers').innerText = onlinePlayers;
-    });
-  }
-  
-  function loadGlobalSettings() {
-    db.ref('settings/global').on('value', snapshot => {
-      const settings = snapshot.val() || { defaultRounds: 10, defaultThinkTime: 15, defaultViewTime: 3 };
-      document.getElementById('defRoundsSlider').value = settings.defaultRounds;
-      document.getElementById('defThinkSlider').value = settings.defaultThinkTime;
-      document.getElementById('defViewSlider').value = settings.defaultViewTime;
-      document.getElementById('defRoundsVal').innerText = settings.defaultRounds;
-      document.getElementById('defThinkVal').innerText = settings.defaultThinkTime;
-      document.getElementById('defViewVal').innerText = settings.defaultViewTime;
-    });
-    
-    document.getElementById('defRoundsSlider').oninput = function() { document.getElementById('defRoundsVal').innerText = this.value; };
-    document.getElementById('defThinkSlider').oninput = function() { document.getElementById('defThinkVal').innerText = this.value; };
-    document.getElementById('defViewSlider').oninput = function() { document.getElementById('defViewVal').innerText = this.value; };
   }
   
   // ==================== إدارة الأسئلة ====================
   window.addQuestion = function() {
-    const q = document.getElementById('newQuestion').value.trim();
-    const optA = document.getElementById('newOptA').value.trim();
-    const optB = document.getElementById('newOptB').value.trim();
-    const optC = document.getElementById('newOptC').value.trim();
-    const optD = document.getElementById('newOptD').value.trim();
-    const correctLetter = document.getElementById('newCorrect').value;
-    const category = document.getElementById('newCategory').value.trim() || 'متنوع';
+    const q = document.getElementById('qText').value.trim();
+    const a = document.getElementById('optA').value.trim();
+    const b = document.getElementById('optB').value.trim();
+    const c = document.getElementById('optC').value.trim();
+    const d = document.getElementById('optD').value.trim();
+    const correctIdx = parseInt(document.getElementById('correctAns').value);
+    const cat = document.getElementById('qCat').value.trim() || 'متنوع';
     
-    if(!q || !optA || !optB || !optC || !optD) {
-      showToast('الرجاء ملء جميع الحقول', 'error');
+    if(!q || !a || !b || !c || !d) {
+      alert('الرجاء ملء جميع الحقول');
       return;
     }
     
-    const opts = [optA, optB, optC, optD];
-    const ans = opts[correctLetter === 'A' ? 0 : correctLetter === 'B' ? 1 : correctLetter === 'C' ? 2 : 3];
+    const opts = [a, b, c, d];
+    const ans = opts[correctIdx];
     
-    db.ref('questions').push({ q, opts, ans, cat: category, createdAt: Date.now() });
+    db.ref('questions').push({ q, opts, ans, cat, createdAt: Date.now() });
     
-    document.getElementById('newQuestion').value = '';
-    document.getElementById('newOptA').value = '';
-    document.getElementById('newOptB').value = '';
-    document.getElementById('newOptC').value = '';
-    document.getElementById('newOptD').value = '';
-    document.getElementById('newCategory').value = '';
+    // مسح الحقول
+    document.getElementById('qText').value = '';
+    document.getElementById('optA').value = '';
+    document.getElementById('optB').value = '';
+    document.getElementById('optC').value = '';
+    document.getElementById('optD').value = '';
     
-    showToast('تم إضافة السؤال بنجاح', 'success');
+    showToast('✅ تم إضافة السؤال');
   };
   
-  window.editQuestion = function(id) {
-    const q = allQuestions.find(q => q.id === id);
-    if(!q) return;
-    
-    document.getElementById('editQuestionId').value = id;
-    document.getElementById('editQuestion').value = q.q || '';
+  window.editQuestion = function(q) {
+    document.getElementById('editId').value = q.id;
+    document.getElementById('editQText').value = q.q || '';
     document.getElementById('editOptA').value = q.opts?.[0] || '';
     document.getElementById('editOptB').value = q.opts?.[1] || '';
     document.getElementById('editOptC').value = q.opts?.[2] || '';
     document.getElementById('editOptD').value = q.opts?.[3] || '';
+    document.getElementById('editCat').value = q.cat || '';
     
-    const correctIndex = q.opts?.indexOf(q.ans) || 0;
-    document.getElementById('editCorrect').value = correctIndex === 0 ? 'A' : correctIndex === 1 ? 'B' : correctIndex === 2 ? 'C' : 'D';
-    document.getElementById('editCategory').value = q.cat || '';
+    const idx = q.opts?.indexOf(q.ans) || 0;
+    document.getElementById('editCorrect').value = idx;
     
     document.getElementById('editModal').classList.add('active');
   };
   
   window.updateQuestion = function() {
-    const id = document.getElementById('editQuestionId').value;
-    const q = document.getElementById('editQuestion').value.trim();
+    const id = document.getElementById('editId').value;
+    const q = document.getElementById('editQText').value.trim();
     const opts = [
       document.getElementById('editOptA').value.trim(),
       document.getElementById('editOptB').value.trim(),
       document.getElementById('editOptC').value.trim(),
       document.getElementById('editOptD').value.trim()
     ];
-    const correctLetter = document.getElementById('editCorrect').value;
-    const ans = opts[correctLetter === 'A' ? 0 : correctLetter === 'B' ? 1 : correctLetter === 'C' ? 2 : 3];
-    const cat = document.getElementById('editCategory').value.trim();
+    const ans = opts[parseInt(document.getElementById('editCorrect').value)];
+    const cat = document.getElementById('editCat').value.trim();
     
     db.ref(`questions/${id}`).update({ q, opts, ans, cat, updatedAt: Date.now() });
-    closeEditModal();
-    showToast('تم تحديث السؤال', 'success');
+    closeModal();
+    showToast('✅ تم تحديث السؤال');
   };
   
   window.deleteQuestion = function(id) {
     if(confirm('هل أنت متأكد من حذف هذا السؤال؟')) {
       db.ref(`questions/${id}`).remove();
-      showToast('تم حذف السؤال', 'success');
+      showToast('✅ تم حذف السؤال');
     }
   };
   
-  window.closeEditModal = function() {
+  window.closeModal = function() {
     document.getElementById('editModal').classList.remove('active');
   };
   
   // ==================== إعدادات ====================
-  window.saveGlobalSettings = function() {
+  window.saveSettings = function() {
     const settings = {
-      defaultRounds: +document.getElementById('defRoundsSlider').value,
-      defaultThinkTime: +document.getElementById('defThinkSlider').value,
-      defaultViewTime: +document.getElementById('defViewSlider').value
+      defaultRounds: +document.getElementById('roundsSlider').value,
+      defaultThinkTime: +document.getElementById('thinkSlider').value,
+      defaultViewTime: +document.getElementById('viewSlider').value
     };
     db.ref('settings/global').set(settings);
-    showToast('تم حفظ الإعدادات', 'success');
+    showToast('✅ تم حفظ الإعدادات');
   };
   
   window.resetGame = function() {
     if(confirm('إعادة ضبط اللعبة لجميع اللاعبين؟')) {
-      db.ref('rooms').once('value', snapshot => {
-        const rooms = snapshot.val() || {};
-        Object.keys(rooms).forEach(roomId => {
-          db.ref(`rooms/${roomId}/gameState`).set({ started: false });
+      db.ref('rooms').once('value', snap => {
+        const rooms = snap.val() || {};
+        Object.keys(rooms).forEach(id => {
+          db.ref(`rooms/${id}/gameState`).set({ started: false });
         });
       });
-      showToast('تم إعادة ضبط اللعبة', 'success');
+      showToast('✅ تم إعادة ضبط اللعبة');
     }
   };
   
-  function showToast(message, type) {
-    const existing = document.querySelector('.toast');
-    if(existing) existing.remove();
+  function showToast(msg) {
+    const old = document.querySelector('.toast');
+    if(old) old.remove();
     
     const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
-    toast.innerText = message;
+    toast.className = 'toast';
+    toast.innerText = msg;
     document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 2500);
+    setTimeout(() => toast.remove(), 2000);
   }
-  
-  // سحب للتحديث
-  let touchStartY = 0;
-  document.addEventListener('touchstart', e => { touchStartY = e.touches[0].clientY; });
-  document.addEventListener('touchmove', e => {
-    if(window.scrollY === 0 && e.touches[0].clientY - touchStartY > 80) {
-      loadDashboard();
-      showToast('جاري التحديث...', 'success');
-    }
-  });
 </script>
 </body>
 </html>
