@@ -3,160 +3,346 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>🎯 لوحة التحكم · 5000 لغز عربي</title>
+  <title>🎯 لوحة التحكم الاحترافية · 5000 لغز عربي</title>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    body { background: #0a0a0a; font-family: 'Cairo', sans-serif; color: white; min-height: 100vh; padding: 16px; }
-    .admin-container { max-width: 1200px; margin: 0 auto; }
+    body { background: #050505; font-family: 'Cairo', sans-serif; color: white; min-height: 100vh; }
     
     /* شاشة تسجيل الدخول */
-    .login-screen { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
-    .login-card { background: #151515; border-radius: 32px; padding: 40px 30px; border: 1px solid #ff3333; max-width: 400px; width: 100%; text-align: center; box-shadow: 0 0 50px rgba(255,0,0,0.2); }
-    .login-card h1 { font-size: 32px; font-weight: 900; background: linear-gradient(135deg, #ff6b6b, #ff1a1a); -webkit-background-clip: text; background-clip: text; color: transparent; margin-bottom: 30px; }
-    .login-input { width: 100%; padding: 16px 18px; background: #0a0a0a; border: 2px solid #333; border-radius: 16px; color: white; font-size: 16px; margin-bottom: 16px; font-family: 'Cairo', sans-serif; }
-    .login-input:focus { border-color: #ff4444; outline: none; }
-    .login-btn { width: 100%; padding: 16px; background: #e60000; border: none; border-radius: 16px; color: white; font-size: 18px; font-weight: 700; cursor: pointer; font-family: 'Cairo', sans-serif; }
-    .login-error { color: #ff4444; margin-top: 16px; font-size: 14px; }
+    .login-container { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; background: linear-gradient(135deg, #0a0000, #000000); }
+    .login-box { background: rgba(20, 0, 0, 0.9); backdrop-filter: blur(20px); border: 2px solid #ff3333; border-radius: 32px; padding: 40px 30px; max-width: 420px; width: 100%; text-align: center; box-shadow: 0 0 60px rgba(255,0,0,0.3); }
+    .login-box h1 { font-size: 36px; font-weight: 900; background: linear-gradient(135deg, #ff6b6b, #ff1a1a); -webkit-background-clip: text; background-clip: text; color: transparent; margin-bottom: 10px; }
+    .login-box .subtitle { color: #aaa; margin-bottom: 30px; font-size: 14px; }
+    .login-input { width: 100%; padding: 16px 18px; background: #0a0a0a; border: 2px solid #333; border-radius: 16px; color: white; font-size: 16px; margin-bottom: 16px; font-family: 'Cairo', sans-serif; transition: all 0.3s; }
+    .login-input:focus { border-color: #ff4444; outline: none; box-shadow: 0 0 20px rgba(255,68,68,0.3); }
+    .login-btn { width: 100%; padding: 16px; background: linear-gradient(135deg, #cc0000, #990000); border: none; border-radius: 16px; color: white; font-size: 18px; font-weight: 700; cursor: pointer; font-family: 'Cairo', sans-serif; transition: all 0.3s; }
+    .login-btn:hover { background: linear-gradient(135deg, #ff0000, #bb0000); box-shadow: 0 0 30px rgba(255,0,0,0.5); }
+    .login-error { color: #ff4444; margin-top: 16px; font-size: 14px; min-height: 20px; }
     
-    /* لوحة التحكم الرئيسية */
-    .dashboard-screen { display: none; }
-    .dashboard-screen.active { display: block; }
+    /* لوحة التحكم */
+    .dashboard { display: none; min-height: 100vh; background: #050505; }
+    .dashboard.active { display: block; }
     
-    .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 16px; }
-    .header h1 { font-size: 28px; font-weight: 900; background: linear-gradient(135deg, #ff6b6b, #ff1a1a); -webkit-background-clip: text; background-clip: text; color: transparent; }
-    .header-actions { display: flex; gap: 12px; }
+    /* الشريط الجانبي */
+    .sidebar { position: fixed; right: 0; top: 0; bottom: 0; width: 280px; background: #0a0a0a; border-left: 1px solid #2a0000; padding: 24px 16px; overflow-y: auto; z-index: 100; }
+    .sidebar-logo { font-size: 24px; font-weight: 900; background: linear-gradient(135deg, #ff6b6b, #ff1a1a); -webkit-background-clip: text; background-clip: text; color: transparent; text-align: center; margin-bottom: 30px; }
+    .sidebar-menu { list-style: none; }
+    .sidebar-item { padding: 14px 16px; margin-bottom: 8px; border-radius: 14px; cursor: pointer; display: flex; align-items: center; gap: 12px; color: #aaa; transition: all 0.3s; font-weight: 600; }
+    .sidebar-item:hover { background: #1a0000; color: white; }
+    .sidebar-item.active { background: #cc0000; color: white; box-shadow: 0 0 20px rgba(255,0,0,0.3); }
+    .sidebar-item .icon { font-size: 22px; }
+    .sidebar-footer { position: absolute; bottom: 20px; left: 16px; right: 16px; }
     
-    .btn { padding: 12px 20px; border-radius: 14px; font-size: 14px; font-weight: 700; cursor: pointer; font-family: 'Cairo', sans-serif; border: none; transition: all 0.2s; }
-    .btn-primary { background: #e60000; color: white; }
-    .btn-secondary { background: #222; color: white; border: 1px solid #444; }
+    /* المحتوى الرئيسي */
+    .main-content { margin-right: 280px; padding: 24px 32px; }
+    
+    /* الهيدر */
+    .top-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 30px; }
+    .page-title { font-size: 28px; font-weight: 800; }
+    .user-info { display: flex; align-items: center; gap: 16px; }
+    .admin-badge { background: #cc0000; padding: 8px 16px; border-radius: 30px; font-size: 14px; font-weight: 600; }
+    
+    /* البطاقات */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+    .stat-card { background: linear-gradient(135deg, #1a0a0a, #0a0000); border: 1px solid #3a0000; border-radius: 24px; padding: 24px; position: relative; overflow: hidden; }
+    .stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #ff1a1a, #ff6666); }
+    .stat-value { font-size: 42px; font-weight: 900; color: #ff4444; }
+    .stat-label { color: #aaa; font-size: 15px; margin-top: 8px; }
+    .stat-icon { position: absolute; bottom: 10px; left: 20px; font-size: 60px; opacity: 0.1; color: #ff0000; }
+    
+    /* الأقسام */
+    .section-card { background: #0d0d0d; border: 1px solid #2a0000; border-radius: 24px; padding: 24px; margin-bottom: 30px; }
+    .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+    .section-title { font-size: 20px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+    .section-title .icon { color: #ff4444; font-size: 24px; }
+    
+    /* أزرار */
+    .btn { padding: 12px 24px; border-radius: 14px; font-size: 14px; font-weight: 700; cursor: pointer; font-family: 'Cairo', sans-serif; border: none; transition: all 0.3s; display: inline-flex; align-items: center; gap: 8px; }
+    .btn-primary { background: linear-gradient(135deg, #cc0000, #990000); color: white; }
+    .btn-primary:hover { background: linear-gradient(135deg, #ff0000, #bb0000); box-shadow: 0 0 30px rgba(255,0,0,0.4); }
+    .btn-secondary { background: #1a1a1a; color: white; border: 1px solid #444; }
     .btn-danger { background: #550000; color: #ff9999; border: 1px solid #ff4444; }
     .btn-success { background: #006600; color: white; }
-    .btn:active { transform: scale(0.98); }
+    .btn-outline { background: transparent; border: 1px solid #ff4444; color: #ff9999; }
+    .btn-sm { padding: 8px 16px; font-size: 13px; }
     
-    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; margin-bottom: 24px; }
-    .stat-card { background: #151515; border-radius: 20px; padding: 20px; border: 1px solid #2a2a2a; text-align: center; }
-    .stat-value { font-size: 36px; font-weight: 900; color: #ff4444; }
-    .stat-label { color: #aaa; font-size: 14px; margin-top: 8px; }
-    
-    .section-title { font-size: 20px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
-    .card { background: #151515; border-radius: 24px; padding: 24px; border: 1px solid #2a2a2a; margin-bottom: 24px; }
-    
-    /* نموذج إضافة سؤال */
-    .form-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
-    @media (min-width: 768px) { .form-grid { grid-template-columns: 1fr 1fr; } }
+    /* نماذج */
+    .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
     .form-group { margin-bottom: 16px; }
-    .form-group label { display: block; color: #aaa; margin-bottom: 8px; font-size: 14px; }
-    .form-group input, .form-group select { width: 100%; padding: 14px 16px; background: #0a0a0a; border: 1px solid #333; border-radius: 14px; color: white; font-size: 15px; font-family: 'Cairo', sans-serif; }
-    .form-group input:focus, .form-group select:focus { border-color: #ff4444; outline: none; }
-    .full-width { grid-column: 1 / -1; }
+    .form-group.full-width { grid-column: span 2; }
+    .form-group label { display: block; color: #aaa; margin-bottom: 8px; font-size: 14px; font-weight: 600; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 14px 16px; background: #050505; border: 1.5px solid #333; border-radius: 14px; color: white; font-size: 15px; font-family: 'Cairo', sans-serif; transition: all 0.3s; }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #ff4444; outline: none; box-shadow: 0 0 15px rgba(255,68,68,0.2); }
     
-    /* جدول الأسئلة */
-    .table-container { overflow-x: auto; max-height: 500px; overflow-y: auto; }
-    .questions-table { width: 100%; border-collapse: collapse; font-size: 14px; }
-    .questions-table th { background: #1a1a1a; padding: 14px 12px; text-align: right; color: #ff9999; font-weight: 700; position: sticky; top: 0; }
-    .questions-table td { padding: 12px; border-bottom: 1px solid #2a2a2a; }
-    .questions-table tr:hover { background: #1a1a1a; }
-    .action-buttons { display: flex; gap: 8px; }
-    .icon-btn { background: none; border: none; color: #aaa; cursor: pointer; font-size: 18px; padding: 4px 8px; }
-    .icon-btn.edit:hover { color: #ffaa00; }
-    .icon-btn.delete:hover { color: #ff4444; }
+    /* جداول */
+    .table-wrapper { overflow-x: auto; max-height: 500px; overflow-y: auto; border-radius: 16px; }
+    .data-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .data-table thead { position: sticky; top: 0; background: #1a0000; z-index: 10; }
+    .data-table th { padding: 16px 12px; text-align: right; color: #ff9999; font-weight: 700; border-bottom: 2px solid #ff3333; }
+    .data-table td { padding: 14px 12px; border-bottom: 1px solid #2a0000; }
+    .data-table tbody tr:hover { background: #0a0000; }
     
-    /* إعدادات اللعبة */
-    .settings-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
-    .slider-item label { display: flex; justify-content: space-between; margin-bottom: 8px; }
-    input[type="range"] { width: 100%; accent-color: #ff1a1a; }
+    .action-cell { display: flex; gap: 8px; }
+    .icon-btn { background: none; border: none; color: #aaa; cursor: pointer; font-size: 18px; padding: 6px 10px; border-radius: 8px; transition: all 0.2s; }
+    .icon-btn.edit:hover { background: #332200; color: #ffaa00; }
+    .icon-btn.delete:hover { background: #330000; color: #ff4444; }
+    .icon-btn.view:hover { background: #002233; color: #00aaff; }
     
-    /* مودال التعديل */
-    .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 1000; align-items: center; justify-content: center; padding: 16px; }
-    .modal.active { display: flex; }
-    .modal-content { background: #151515; border-radius: 24px; padding: 24px; max-width: 500px; width: 100%; border: 1px solid #ff3333; }
-    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-    .modal-title { font-size: 20px; font-weight: 700; }
-    .close-btn { background: none; border: none; color: #aaa; font-size: 24px; cursor: pointer; }
+    /* إعدادات */
+    .settings-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; }
+    .setting-item { background: #0a0000; border-radius: 20px; padding: 20px; border: 1px solid #2a0000; }
+    .setting-item label { display: flex; justify-content: space-between; margin-bottom: 15px; font-weight: 600; }
+    .setting-item input[type="range"] { width: 100%; accent-color: #ff1a1a; height: 6px; }
+    .setting-value { color: #ff4444; font-weight: 700; }
     
-    .toast { position: fixed; bottom: 20px; right: 20px; background: #333; padding: 12px 20px; border-radius: 12px; color: white; z-index: 2000; animation: slideIn 0.3s; }
-    .toast.success { background: #006600; }
-    .toast.error { background: #8b0000; }
-    @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    /* روابط سريعة */
+    .quick-actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 20px; }
+    .quick-btn { background: #0a0a0a; border: 1px solid #2a0000; border-radius: 16px; padding: 16px; text-align: center; cursor: pointer; transition: all 0.3s; }
+    .quick-btn:hover { background: #1a0000; border-color: #ff4444; }
+    .quick-btn .icon { font-size: 28px; margin-bottom: 8px; }
+    
+    /* مودال */
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.95); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
+    .modal-overlay.active { display: flex; }
+    .modal { background: #0d0d0d; border: 2px solid #ff3333; border-radius: 28px; padding: 30px; max-width: 550px; width: 100%; max-height: 90vh; overflow-y: auto; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+    .modal-title { font-size: 22px; font-weight: 700; }
+    .modal-close { background: none; border: none; color: #aaa; font-size: 28px; cursor: pointer; }
+    
+    /* إشعارات */
+    .toast-container { position: fixed; bottom: 20px; left: 20px; z-index: 2000; }
+    .toast { background: #1a1a1a; border-right: 4px solid #ff4444; padding: 16px 20px; border-radius: 12px; color: white; margin-top: 10px; animation: slideIn 0.3s; display: flex; align-items: center; gap: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.5); }
+    .toast.success { border-right-color: #00aa00; }
+    .toast.error { border-right-color: #ff0000; }
+    .toast.warning { border-right-color: #ffaa00; }
+    @keyframes slideIn { from { transform: translateX(-100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    
+    /* متجاوب */
+    @media (max-width: 900px) {
+      .sidebar { width: 80px; }
+      .sidebar-item span:not(.icon) { display: none; }
+      .sidebar-logo { font-size: 20px; }
+      .main-content { margin-right: 80px; padding: 16px; }
+      .form-grid { grid-template-columns: 1fr; }
+      .form-group.full-width { grid-column: span 1; }
+    }
+    
+    @media (max-width: 600px) {
+      .sidebar { display: none; }
+      .main-content { margin-right: 0; }
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+    }
+    
+    /* ألوان الفئات */
+    .category-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    .category-badge.dينية { background: #004d00; color: #aaffaa; }
+    .category-badge.رياضة { background: #004d4d; color: #aaffff; }
+    .category-badge.أفلام { background: #4d004d; color: #ffaaff; }
+    .category-badge.علوم { background: #003366; color: #aaddff; }
+    .category-badge.فلك { background: #331a00; color: #ffcc99; }
+    .category-badge.خرائط { background: #4d3300; color: #ffdd99; }
+    
+    /* شريط التقدم */
+    .progress-ring { width: 80px; height: 80px; }
   </style>
 </head>
 <body>
-<div class="admin-container">
   <!-- شاشة تسجيل الدخول -->
-  <div class="login-screen" id="loginScreen">
-    <div class="login-card">
-      <h1>🔐 لوحة التحكم</h1>
-      <input type="text" id="usernameInput" class="login-input" placeholder="اسم المستخدم" value="admin">
-      <input type="password" id="passwordInput" class="login-input" placeholder="كلمة المرور" value="admin123">
-      <button class="login-btn" onclick="login()">دخول</button>
+  <div class="login-container" id="loginScreen">
+    <div class="login-box">
+      <h1>🎮 لوحة التحكم</h1>
+      <p class="subtitle">5000 لغز عربي · نظام الإدارة المتكامل</p>
+      <input type="text" id="usernameInput" class="login-input" placeholder="👤 اسم المستخدم" value="admin">
+      <input type="password" id="passwordInput" class="login-input" placeholder="🔐 كلمة المرور" value="admin123">
+      <button class="login-btn" onclick="login()">🚪 دخول إلى لوحة التحكم</button>
       <div class="login-error" id="loginError"></div>
     </div>
   </div>
 
-  <!-- لوحة التحكم الرئيسية -->
-  <div class="dashboard-screen" id="dashboardScreen">
-    <div class="header">
-      <h1>🎮 لوحة تحكم المسؤول</h1>
-      <div class="header-actions">
-        <button class="btn btn-danger" onclick="resetGame()">🔄 إعادة ضبط اللعبة</button>
-        <button class="btn btn-secondary" onclick="logout()">🚪 تسجيل خروج</button>
+  <!-- لوحة التحكم -->
+  <div class="dashboard" id="dashboardScreen">
+    <!-- الشريط الجانبي -->
+    <div class="sidebar">
+      <div class="sidebar-logo">🎯 5000 لغز</div>
+      <ul class="sidebar-menu">
+        <li class="sidebar-item active" onclick="switchTab('dashboard')"><span class="icon">📊</span><span>الرئيسية</span></li>
+        <li class="sidebar-item" onclick="switchTab('questions')"><span class="icon">📝</span><span>إدارة الأسئلة</span></li>
+        <li class="sidebar-item" onclick="switchTab('add')"><span class="icon">➕</span><span>إضافة سؤال</span></li>
+        <li class="sidebar-item" onclick="switchTab('settings')"><span class="icon">⚙️</span><span>الإعدادات</span></li>
+        <li class="sidebar-item" onclick="switchTab('rooms')"><span class="icon">🏠</span><span>الغرف النشطة</span></li>
+        <li class="sidebar-item" onclick="switchTab('players')"><span class="icon">👥</span><span>اللاعبين</span></li>
+      </ul>
+      <div class="sidebar-footer">
+        <button class="btn btn-outline" style="width:100%;" onclick="logout()">🚪 تسجيل خروج</button>
       </div>
     </div>
     
-    <!-- إحصائيات -->
-    <div class="stats-grid">
-      <div class="stat-card"><div class="stat-value" id="totalQuestions">0</div><div class="stat-label">إجمالي الأسئلة</div></div>
-      <div class="stat-card"><div class="stat-value" id="activeRooms">0</div><div class="stat-label">الغرف النشطة</div></div>
-      <div class="stat-card"><div class="stat-value" id="onlinePlayers">0</div><div class="stat-label">اللاعبين المتصلين</div></div>
-    </div>
-    
-    <!-- إضافة سؤال جديد -->
-    <div class="card">
-      <div class="section-title"><span>➕</span> إضافة سؤال جديد</div>
-      <div class="form-grid">
-        <div class="form-group full-width"><label>السؤال</label><input type="text" id="newQuestion" placeholder="أدخل السؤال..."></div>
-        <div class="form-group"><label>الخيار أ</label><input type="text" id="newOptA" placeholder="الخيار الأول"></div>
-        <div class="form-group"><label>الخيار ب</label><input type="text" id="newOptB" placeholder="الخيار الثاني"></div>
-        <div class="form-group"><label>الخيار ج</label><input type="text" id="newOptC" placeholder="الخيار الثالث"></div>
-        <div class="form-group"><label>الخيار د</label><input type="text" id="newOptD" placeholder="الخيار الرابع"></div>
-        <div class="form-group"><label>الإجابة الصحيحة</label><select id="newCorrect"><option value="A">أ</option><option value="B">ب</option><option value="C">ج</option><option value="D">د</option></select></div>
-        <div class="form-group"><label>التصنيف</label><input type="text" id="newCategory" placeholder="مثال: دينية، رياضة..."></div>
-        <div class="form-group full-width"><button class="btn btn-primary" onclick="addQuestion()" style="width:100%;">💾 حفظ السؤال</button></div>
+    <!-- المحتوى الرئيسي -->
+    <div class="main-content">
+      <div class="top-bar">
+        <h1 class="page-title" id="pageTitle">📊 الرئيسية</h1>
+        <div class="user-info">
+          <span class="admin-badge">👑 مدير النظام</span>
+        </div>
       </div>
-    </div>
-    
-    <!-- إعدادات اللعبة -->
-    <div class="card">
-      <div class="section-title"><span>⚙️</span> إعدادات اللعبة العامة</div>
-      <div class="settings-grid">
-        <div class="slider-item"><label>🔴 الجولات الافتراضية <span id="defRoundsVal">10</span></label><input type="range" id="defRoundsSlider" min="5" max="30" value="10"></div>
-        <div class="slider-item"><label>⏳ وقت التفكير <span id="defThinkVal">15</span> ث</label><input type="range" id="defThinkSlider" min="5" max="45" value="15"></div>
-        <div class="slider-item"><label>🕒 عرض الإجابة <span id="defViewVal">3</span> ث</label><input type="range" id="defViewSlider" min="2" max="10" value="3"></div>
+      
+      <!-- تبويب الرئيسية -->
+      <div id="tab-dashboard" class="tab-content active">
+        <!-- إحصائيات -->
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-value" id="statQuestions">0</div><div class="stat-label">إجمالي الأسئلة</div><div class="stat-icon">📝</div></div>
+          <div class="stat-card"><div class="stat-value" id="statRooms">0</div><div class="stat-label">الغرف النشطة</div><div class="stat-icon">🏠</div></div>
+          <div class="stat-card"><div class="stat-value" id="statPlayers">0</div><div class="stat-label">اللاعبين المتصلين</div><div class="stat-icon">👥</div></div>
+          <div class="stat-card"><div class="stat-value" id="statCategories">0</div><div class="stat-label">فئة مختلفة</div><div class="stat-icon">📂</div></div>
+        </div>
+        
+        <!-- إجراءات سريعة -->
+        <div class="section-card">
+          <div class="section-header"><div class="section-title"><span class="icon">⚡</span>إجراءات سريعة</div></div>
+          <div class="quick-actions">
+            <div class="quick-btn" onclick="switchTab('add')"><div class="icon">➕</div><div>إضافة سؤال</div></div>
+            <div class="quick-btn" onclick="resetAllGames()"><div class="icon">🔄</div><div>إعادة ضبط اللعبة</div></div>
+            <div class="quick-btn" onclick="exportQuestions()"><div class="icon">📤</div><div>تصدير الأسئلة</div></div>
+            <div class="quick-btn" onclick="importQuestions()"><div class="icon">📥</div><div>استيراد أسئلة</div></div>
+          </div>
+        </div>
+        
+        <!-- آخر الأسئلة المضافة -->
+        <div class="section-card">
+          <div class="section-header">
+            <div class="section-title"><span class="icon">🕐</span>آخر الأسئلة المضافة</div>
+            <button class="btn btn-outline btn-sm" onclick="switchTab('questions')">عرض الكل →</button>
+          </div>
+          <div class="table-wrapper" style="max-height: 300px;">
+            <table class="data-table">
+              <thead><tr><th>السؤال</th><th>التصنيف</th><th>تاريخ الإضافة</th></tr></thead>
+              <tbody id="recentQuestionsTable"></tbody>
+            </table>
+          </div>
+        </div>
       </div>
-      <button class="btn btn-primary" onclick="saveGlobalSettings()" style="margin-top:20px;">💾 حفظ الإعدادات العامة</button>
-    </div>
-    
-    <!-- جدول الأسئلة -->
-    <div class="card">
-      <div class="section-title"><span>📋</span> إدارة الأسئلة <span style="margin-right:auto; font-size:14px; color:#aaa;">(اسحب للتحديث)</span></div>
-      <div class="table-container">
-        <table class="questions-table" id="questionsTable">
-          <thead><tr><th>السؤال</th><th>أ</th><th>ب</th><th>ج</th><th>د</th><th>الإجابة</th><th>التصنيف</th><th>إجراءات</th></tr></thead>
-          <tbody id="questionsTableBody"></tbody>
-        </table>
+      
+      <!-- تبويب إدارة الأسئلة -->
+      <div id="tab-questions" class="tab-content" style="display:none;">
+        <div class="section-card">
+          <div class="section-header">
+            <div class="section-title"><span class="icon">📋</span>جميع الأسئلة</div>
+            <div>
+              <input type="text" id="searchQuestions" placeholder="🔍 بحث..." style="padding:10px 16px; background:#050505; border:1px solid #333; border-radius:12px; color:white; margin-left:10px;">
+              <select id="filterCategory" style="padding:10px 16px; background:#050505; border:1px solid #333; border-radius:12px; color:white;">
+                <option value="">كل الفئات</option>
+              </select>
+            </div>
+          </div>
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead><tr><th>#</th><th>السؤال</th><th>الخيارات</th><th>الإجابة</th><th>التصنيف</th><th>إجراءات</th></tr></thead>
+              <tbody id="allQuestionsTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      
+      <!-- تبويب إضافة سؤال -->
+      <div id="tab-add" class="tab-content" style="display:none;">
+        <div class="section-card">
+          <div class="section-header"><div class="section-title"><span class="icon">➕</span>إضافة سؤال جديد</div></div>
+          <div class="form-grid">
+            <div class="form-group full-width"><label>📝 السؤال</label><textarea id="newQuestion" rows="3" placeholder="أدخل نص السؤال..."></textarea></div>
+            <div class="form-group"><label>🅰️ الخيار أ</label><input type="text" id="newOptA" placeholder="الخيار الأول"></div>
+            <div class="form-group"><label>🅱️ الخيار ب</label><input type="text" id="newOptB" placeholder="الخيار الثاني"></div>
+            <div class="form-group"><label>🅲️ الخيار ج</label><input type="text" id="newOptC" placeholder="الخيار الثالث"></div>
+            <div class="form-group"><label>🅳️ الخيار د</label><input type="text" id="newOptD" placeholder="الخيار الرابع"></div>
+            <div class="form-group"><label>✅ الإجابة الصحيحة</label><select id="newCorrect"><option value="A">أ</option><option value="B">ب</option><option value="C">ج</option><option value="D">د</option></select></div>
+            <div class="form-group"><label>📂 التصنيف</label><input type="text" id="newCategory" placeholder="مثال: دينية، رياضة..." list="categoriesList"><datalist id="categoriesList"></datalist></div>
+            <div class="form-group full-width">
+              <button class="btn btn-primary" onclick="addQuestion()">💾 حفظ السؤال</button>
+              <button class="btn btn-secondary" onclick="clearAddForm()">🗑️ مسح النموذج</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- تبويب الإعدادات -->
+      <div id="tab-settings" class="tab-content" style="display:none;">
+        <div class="section-card">
+          <div class="section-header"><div class="section-title"><span class="icon">⚙️</span>إعدادات اللعبة العامة</div></div>
+          <div class="settings-grid">
+            <div class="setting-item">
+              <label>🔴 الجولات الافتراضية <span class="setting-value" id="defRoundsVal">10</span></label>
+              <input type="range" id="defRoundsSlider" min="5" max="30" value="10">
+              <p style="color:#aaa; font-size:13px; margin-top:15px;">عدد الجولات المقترح عند إنشاء غرفة جديدة</p>
+            </div>
+            <div class="setting-item">
+              <label>⏳ وقت التفكير <span class="setting-value" id="defThinkVal">15</span> ث</label>
+              <input type="range" id="defThinkSlider" min="5" max="45" value="15">
+              <p style="color:#aaa; font-size:13px; margin-top:15px;">الوقت المتاح للإجابة على كل سؤال</p>
+            </div>
+            <div class="setting-item">
+              <label>🕒 عرض الإجابة <span class="setting-value" id="defViewVal">3</span> ث</label>
+              <input type="range" id="defViewSlider" min="2" max="10" value="3">
+              <p style="color:#aaa; font-size:13px; margin-top:15px;">مدة عرض الإجابة الصحيحة بعد انتهاء الوقت</p>
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="saveGlobalSettings()" style="margin-top:20px;">💾 حفظ الإعدادات العامة</button>
+        </div>
+        
+        <div class="section-card">
+          <div class="section-header"><div class="section-title"><span class="icon">🔐</span>إعدادات المسؤول</div></div>
+          <div class="form-grid">
+            <div class="form-group"><label>👤 اسم المستخدم الجديد</label><input type="text" id="newUsername" placeholder="اسم المستخدم"></div>
+            <div class="form-group"><label>🔑 كلمة المرور الجديدة</label><input type="password" id="newPassword" placeholder="كلمة المرور"></div>
+            <div class="form-group full-width"><button class="btn btn-primary" onclick="updateAdminCredentials()">🔐 تحديث بيانات الدخول</button></div>
+          </div>
+        </div>
+        
+        <div class="section-card">
+          <div class="section-header"><div class="section-title"><span class="icon">🔄</span>التحكم بالنظام</div></div>
+          <div class="quick-actions">
+            <div class="quick-btn" onclick="resetAllGames()"><div class="icon">🔄</div><div>إعادة ضبط جميع الغرف</div></div>
+            <div class="quick-btn" onclick="clearAllRooms()"><div class="icon">🗑️</div><div>حذف جميع الغرف</div></div>
+            <div class="quick-btn" onclick="resetAllScores()"><div class="icon">📊</div><div>تصفير النقاط</div></div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- تبويب الغرف النشطة -->
+      <div id="tab-rooms" class="tab-content" style="display:none;">
+        <div class="section-card">
+          <div class="section-header"><div class="section-title"><span class="icon">🏠</span>الغرف النشطة حالياً</div></div>
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead><tr><th>رمز الغرفة</th><th>المضيف</th><th>عدد اللاعبين</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+              <tbody id="activeRoomsTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      
+      <!-- تبويب اللاعبين -->
+      <div id="tab-players" class="tab-content" style="display:none;">
+        <div class="section-card">
+          <div class="section-header"><div class="section-title"><span class="icon">👥</span>اللاعبين المتصلين</div></div>
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead><tr><th>الاسم</th><th>الغرفة</th><th>النقاط</th><th>جاهز</th><th>المضيف</th><th>إجراءات</th></tr></thead>
+              <tbody id="onlinePlayersTable"></tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
   </div>
   
-  <!-- مودال تعديل السؤال -->
-  <div class="modal" id="editModal">
-    <div class="modal-content">
-      <div class="modal-header"><div class="modal-title">✏️ تعديل السؤال</div><button class="close-btn" onclick="closeEditModal()">&times;</button></div>
+  <!-- مودال تعديل سؤال -->
+  <div class="modal-overlay" id="editModal">
+    <div class="modal">
+      <div class="modal-header"><div class="modal-title">✏️ تعديل السؤال</div><button class="modal-close" onclick="closeEditModal()">&times;</button></div>
       <input type="hidden" id="editQuestionId">
-      <div class="form-group"><label>السؤال</label><input type="text" id="editQuestion"></div>
+      <div class="form-group"><label>السؤال</label><textarea id="editQuestion" rows="3"></textarea></div>
       <div class="form-group"><label>الخيار أ</label><input type="text" id="editOptA"></div>
       <div class="form-group"><label>الخيار ب</label><input type="text" id="editOptB"></div>
       <div class="form-group"><label>الخيار ج</label><input type="text" id="editOptC"></div>
@@ -166,6 +352,9 @@
       <button class="btn btn-primary" onclick="updateQuestion()" style="width:100%;">💾 حفظ التعديلات</button>
     </div>
   </div>
+  
+  <!-- حاوية الإشعارات -->
+  <div class="toast-container" id="toastContainer"></div>
 </div>
 
 <script>
@@ -173,47 +362,51 @@
   firebase.initializeApp({apiKey:"AIzaSyBKs24sqojKX51Q4HAPv3amY1oTGo3YcyA",authDomain:"myquiz-314f9.firebaseapp.com",databaseURL:"https://myquiz-314f9-default-rtdb.firebaseio.com",projectId:"myquiz-314f9",storageBucket:"myquiz-314f9.firebasestorage.app",messagingSenderId:"86590365416",appId:"1:86590365416:web:0d37b3695ec028103ff35d"});
   const db = firebase.database();
   
-  // ==================== إعدادات المسؤول ====================
-  const ADMIN_CONFIG = {
-    username: 'admin',
-    password: 'admin123'
-  };
-  
+  // ==================== المتغيرات العامة ====================
+  let adminCredentials = { username: 'admin', password: 'admin123' };
   let allQuestions = [];
+  let allRooms = {};
+  let allPlayers = {};
+  let currentTab = 'dashboard';
   
   // ==================== تسجيل الدخول ====================
   window.login = function() {
     const username = document.getElementById('usernameInput').value;
     const password = document.getElementById('passwordInput').value;
     
-    if(username === ADMIN_CONFIG.username && password === ADMIN_CONFIG.password) {
-      document.getElementById('loginScreen').style.display = 'none';
-      document.getElementById('dashboardScreen').classList.add('active');
-      localStorage.setItem('adminLoggedIn', 'true');
-      loadDashboard();
-    } else {
-      document.getElementById('loginError').innerText = 'اسم المستخدم أو كلمة المرور غير صحيحة';
-    }
+    db.ref('settings/admin').once('value', snapshot => {
+      const saved = snapshot.val();
+      if(saved) adminCredentials = saved;
+      
+      if(username === adminCredentials.username && password === adminCredentials.password) {
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('dashboardScreen').classList.add('active');
+        localStorage.setItem('adminLoggedIn', 'true');
+        loadAllData();
+        showToast('تم تسجيل الدخول بنجاح', 'success');
+      } else {
+        document.getElementById('loginError').innerText = 'اسم المستخدم أو كلمة المرور غير صحيحة';
+      }
+    });
   };
   
   window.logout = function() {
     localStorage.removeItem('adminLoggedIn');
-    document.getElementById('loginScreen').style.display = 'flex';
-    document.getElementById('dashboardScreen').classList.remove('active');
+    location.reload();
   };
   
-  // التحقق من تسجيل الدخول السابق
   if(localStorage.getItem('adminLoggedIn') === 'true') {
     document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('dashboardScreen').classList.add('active');
-    loadDashboard();
+    loadAllData();
   }
   
-  // ==================== تحميل لوحة التحكم ====================
-  function loadDashboard() {
+  // ==================== تحميل البيانات ====================
+  function loadAllData() {
     loadQuestions();
-    loadStats();
+    loadRoomsAndPlayers();
     loadGlobalSettings();
+    loadCategories();
   }
   
   function loadQuestions() {
@@ -221,40 +414,25 @@
       allQuestions = [];
       const data = snapshot.val() || {};
       Object.entries(data).forEach(([id, q]) => { allQuestions.push({ id, ...q }); });
-      document.getElementById('totalQuestions').innerText = allQuestions.length;
-      renderQuestionsTable();
+      updateStats();
+      renderQuestionsTables();
     });
   }
   
-  function renderQuestionsTable() {
-    const tbody = document.getElementById('questionsTableBody');
-    tbody.innerHTML = allQuestions.slice(0, 100).map(q => `
-      <tr>
-        <td>${q.q?.substring(0, 40)}${q.q?.length > 40 ? '...' : ''}</td>
-        <td>${q.opts?.[0] || ''}</td>
-        <td>${q.opts?.[1] || ''}</td>
-        <td>${q.opts?.[2] || ''}</td>
-        <td>${q.opts?.[3] || ''}</td>
-        <td>${q.ans || ''}</td>
-        <td>${q.cat || ''}</td>
-        <td><div class="action-buttons">
-          <button class="icon-btn edit" onclick="editQuestion('${q.id}')">✏️</button>
-          <button class="icon-btn delete" onclick="deleteQuestion('${q.id}')">🗑️</button>
-        </div></td>
-      </tr>
-    `).join('');
-  }
-  
-  function loadStats() {
+  function loadRoomsAndPlayers() {
     db.ref('rooms').on('value', snapshot => {
-      const rooms = snapshot.val() || {};
-      const activeRooms = Object.keys(rooms).length;
-      let onlinePlayers = 0;
-      Object.values(rooms).forEach(room => {
-        if(room.players) onlinePlayers += Object.keys(room.players).length;
+      allRooms = snapshot.val() || {};
+      allPlayers = {};
+      Object.entries(allRooms).forEach(([roomId, room]) => {
+        if(room.players) {
+          Object.entries(room.players).forEach(([pid, p]) => {
+            allPlayers[pid] = { ...p, roomId };
+          });
+        }
       });
-      document.getElementById('activeRooms').innerText = activeRooms;
-      document.getElementById('onlinePlayers').innerText = onlinePlayers;
+      updateStats();
+      renderRoomsTable();
+      renderPlayersTable();
     });
   }
   
@@ -274,35 +452,132 @@
     document.getElementById('defViewSlider').oninput = function() { document.getElementById('defViewVal').innerText = this.value; };
   }
   
+  function loadCategories() {
+    const cats = [...new Set(allQuestions.map(q => q.cat).filter(Boolean))];
+    const datalist = document.getElementById('categoriesList');
+    const filter = document.getElementById('filterCategory');
+    datalist.innerHTML = cats.map(c => `<option value="${c}">`).join('');
+    filter.innerHTML = '<option value="">كل الفئات</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join('');
+  }
+  
+  function updateStats() {
+    document.getElementById('statQuestions').innerText = allQuestions.length;
+    document.getElementById('statRooms').innerText = Object.keys(allRooms).length;
+    document.getElementById('statPlayers').innerText = Object.keys(allPlayers).length;
+    document.getElementById('statCategories').innerText = [...new Set(allQuestions.map(q => q.cat).filter(Boolean))].length;
+  }
+  
+  // ==================== عرض الجداول ====================
+  function renderQuestionsTables() {
+    // آخر الأسئلة
+    const recent = [...allQuestions].reverse().slice(0, 5);
+    document.getElementById('recentQuestionsTable').innerHTML = recent.map(q => `
+      <tr><td>${q.q?.substring(0, 50)}${q.q?.length > 50 ? '...' : ''}</td><td><span class="category-badge ${q.cat}">${q.cat || 'متنوع'}</span></td><td>${new Date(q.createdAt || Date.now()).toLocaleDateString('ar')}</td></tr>
+    `).join('');
+    
+    // كل الأسئلة
+    const searchTerm = document.getElementById('searchQuestions')?.value.toLowerCase() || '';
+    const filterCat = document.getElementById('filterCategory')?.value || '';
+    
+    const filtered = allQuestions.filter(q => 
+      (!searchTerm || q.q?.toLowerCase().includes(searchTerm)) &&
+      (!filterCat || q.cat === filterCat)
+    );
+    
+    document.getElementById('allQuestionsTable').innerHTML = filtered.map((q, i) => `
+      <tr>
+        <td>${i+1}</td>
+        <td>${q.q?.substring(0, 40)}${q.q?.length > 40 ? '...' : ''}</td>
+        <td>${q.opts?.join(' / ') || ''}</td>
+        <td style="color:#00aa00; font-weight:700;">${q.ans}</td>
+        <td><span class="category-badge ${q.cat}">${q.cat || 'متنوع'}</span></td>
+        <td class="action-cell">
+          <button class="icon-btn edit" onclick="editQuestion('${q.id}')">✏️</button>
+          <button class="icon-btn delete" onclick="deleteQuestion('${q.id}')">🗑️</button>
+        </td>
+      </tr>
+    `).join('');
+  }
+  
+  function renderRoomsTable() {
+    const rooms = Object.entries(allRooms);
+    document.getElementById('activeRoomsTable').innerHTML = rooms.map(([id, room]) => {
+      const players = room.players || {};
+      const host = Object.values(players).find(p => p.isHost)?.name || 'غير معروف';
+      return `
+        <tr>
+          <td><code style="background:#1a0000; padding:4px 8px; border-radius:8px;">${id}</code></td>
+          <td>👑 ${host}</td>
+          <td>${Object.keys(players).length}</td>
+          <td>${room.gameState?.started ? '🟢 جاري' : '🟡 انتظار'}</td>
+          <td class="action-cell">
+            <button class="icon-btn view" onclick="viewRoom('${id}')">👁️</button>
+            <button class="icon-btn delete" onclick="deleteRoom('${id}')">🗑️</button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+  
+  function renderPlayersTable() {
+    const players = Object.entries(allPlayers);
+    document.getElementById('onlinePlayersTable').innerHTML = players.map(([id, p]) => `
+      <tr>
+        <td>${p.name}</td>
+        <td><code>${p.roomId}</code></td>
+        <td>${p.score || 0}</td>
+        <td>${p.ready ? '✅' : '⏳'}</td>
+        <td>${p.isHost ? '👑 نعم' : 'لا'}</td>
+        <td class="action-cell"><button class="icon-btn delete" onclick="kickPlayerFromRoom('${p.roomId}', '${id}')">🚫</button></td>
+      </tr>
+    `).join('');
+  }
+  
+  // ==================== التنقل بين التبويبات ====================
+  window.switchTab = function(tab) {
+    currentTab = tab;
+    document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
+    document.getElementById(`tab-${tab}`).style.display = 'block';
+    
+    document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+    event.target.closest('.sidebar-item').classList.add('active');
+    
+    const titles = { dashboard: '📊 الرئيسية', questions: '📝 إدارة الأسئلة', add: '➕ إضافة سؤال', settings: '⚙️ الإعدادات', rooms: '🏠 الغرف النشطة', players: '👥 اللاعبين' };
+    document.getElementById('pageTitle').innerText = titles[tab] || tab;
+    
+    if(tab === 'questions') renderQuestionsTables();
+    if(tab === 'rooms') renderRoomsTable();
+    if(tab === 'players') renderPlayersTable();
+  };
+  
   // ==================== إدارة الأسئلة ====================
   window.addQuestion = function() {
     const q = document.getElementById('newQuestion').value.trim();
-    const optA = document.getElementById('newOptA').value.trim();
-    const optB = document.getElementById('newOptB').value.trim();
-    const optC = document.getElementById('newOptC').value.trim();
-    const optD = document.getElementById('newOptD').value.trim();
+    const opts = [
+      document.getElementById('newOptA').value.trim(),
+      document.getElementById('newOptB').value.trim(),
+      document.getElementById('newOptC').value.trim(),
+      document.getElementById('newOptD').value.trim()
+    ];
     const correctLetter = document.getElementById('newCorrect').value;
-    const category = document.getElementById('newCategory').value.trim() || 'متنوع';
-    
-    if(!q || !optA || !optB || !optC || !optD) {
-      showToast('الرجاء ملء جميع الحقول', 'error');
-      return;
-    }
-    
-    const opts = [optA, optB, optC, optD];
     const ans = opts[correctLetter === 'A' ? 0 : correctLetter === 'B' ? 1 : correctLetter === 'C' ? 2 : 3];
+    const cat = document.getElementById('newCategory').value.trim() || 'متنوع';
     
-    const newQuestion = { q, opts, ans, cat: category, createdAt: Date.now() };
-    db.ref('questions').push(newQuestion);
+    if(!q || opts.some(o => !o)) { showToast('الرجاء ملء جميع الحقول', 'error'); return; }
     
+    db.ref('questions').push({ q, opts, ans, cat, createdAt: Date.now() });
+    clearAddForm();
+    showToast('تم إضافة السؤال بنجاح', 'success');
+    switchTab('questions');
+  };
+  
+  window.clearAddForm = function() {
     document.getElementById('newQuestion').value = '';
     document.getElementById('newOptA').value = '';
     document.getElementById('newOptB').value = '';
     document.getElementById('newOptC').value = '';
     document.getElementById('newOptD').value = '';
     document.getElementById('newCategory').value = '';
-    
-    showToast('تم إضافة السؤال بنجاح', 'success');
   };
   
   window.editQuestion = function(id) {
@@ -352,19 +627,55 @@
     document.getElementById('editModal').classList.remove('active');
   };
   
-  // ==================== التحكم باللعبة ====================
-  window.resetGame = function() {
-    if(confirm('هل أنت متأكد من إعادة ضبط اللعبة لجميع اللاعبين؟ سيتم إعادة الجميع إلى اللوبي.')) {
-      db.ref('rooms').once('value', snapshot => {
-        const rooms = snapshot.val() || {};
-        Object.keys(rooms).forEach(roomId => {
-          db.ref(`rooms/${roomId}/gameState`).set({ started: false });
-        });
-      });
-      showToast('تم إعادة ضبط اللعبة', 'success');
+  // ==================== التحكم بالغرف واللاعبين ====================
+  window.viewRoom = function(roomId) {
+    alert(`غرفة: ${roomId}\nعدد اللاعبين: ${Object.keys(allRooms[roomId]?.players || {}).length}`);
+  };
+  
+  window.deleteRoom = function(roomId) {
+    if(confirm('هل أنت متأكد من حذف هذه الغرفة؟')) {
+      db.ref(`rooms/${roomId}`).remove();
+      showToast('تم حذف الغرفة', 'success');
     }
   };
   
+  window.kickPlayerFromRoom = function(roomId, playerId) {
+    if(confirm('هل أنت متأكد من طرد هذا اللاعب؟')) {
+      db.ref(`rooms/${roomId}/players/${playerId}`).remove();
+      showToast('تم طرد اللاعب', 'success');
+    }
+  };
+  
+  window.resetAllGames = function() {
+    if(confirm('هل أنت متأكد من إعادة ضبط جميع الغرف؟ سيتم إيقاف جميع الجولات.')) {
+      Object.keys(allRooms).forEach(roomId => {
+        db.ref(`rooms/${roomId}/gameState`).set({ started: false });
+      });
+      showToast('تم إعادة ضبط جميع الغرف', 'success');
+    }
+  };
+  
+  window.clearAllRooms = function() {
+    if(confirm('تحذير: سيتم حذف جميع الغرف نهائياً!')) {
+      db.ref('rooms').remove();
+      showToast('تم حذف جميع الغرف', 'success');
+    }
+  };
+  
+  window.resetAllScores = function() {
+    if(confirm('هل أنت متأكد من تصفير نقاط جميع اللاعبين؟')) {
+      Object.entries(allRooms).forEach(([roomId, room]) => {
+        if(room.players) {
+          Object.keys(room.players).forEach(pid => {
+            db.ref(`rooms/${roomId}/players/${pid}/score`).set(0);
+          });
+        }
+      });
+      showToast('تم تصفير جميع النقاط', 'success');
+    }
+  };
+  
+  // ==================== الإعدادات ====================
   window.saveGlobalSettings = function() {
     const settings = {
       defaultRounds: +document.getElementById('defRoundsSlider').value,
@@ -375,12 +686,62 @@
     showToast('تم حفظ الإعدادات العامة', 'success');
   };
   
-  function showToast(message, type) {
+  window.updateAdminCredentials = function() {
+    const newUser = document.getElementById('newUsername').value.trim();
+    const newPass = document.getElementById('newPassword').value;
+    
+    if(!newUser || !newPass) { showToast('الرجاء إدخال اسم المستخدم وكلمة المرور', 'error'); return; }
+    
+    adminCredentials = { username: newUser, password: newPass };
+    db.ref('settings/admin').set(adminCredentials);
+    document.getElementById('newUsername').value = '';
+    document.getElementById('newPassword').value = '';
+    showToast('تم تحديث بيانات الدخول بنجاح', 'success');
+  };
+  
+  // ==================== تصدير/استيراد ====================
+  window.exportQuestions = function() {
+    const dataStr = JSON.stringify(allQuestions, null, 2);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `questions_${Date.now()}.json`;
+    a.click();
+    showToast('تم تصدير الأسئلة', 'success');
+  };
+  
+  window.importQuestions = function() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = e => {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onload = event => {
+        try {
+          const questions = JSON.parse(event.target.result);
+          questions.forEach(q => { db.ref('questions').push(q); });
+          showToast(`تم استيراد ${questions.length} سؤال`, 'success');
+        } catch(e) { showToast('ملف غير صالح', 'error'); }
+      };
+      reader.readAsText(file);
+    };
+    input.click();
+  };
+  
+  // ==================== بحث وتصفية ====================
+  document.getElementById('searchQuestions')?.addEventListener('input', renderQuestionsTables);
+  document.getElementById('filterCategory')?.addEventListener('change', renderQuestionsTables);
+  
+  // ==================== إشعارات ====================
+  function showToast(message, type = 'info') {
+    const container = document.getElementById('toastContainer');
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
-    toast.innerText = message;
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 3000);
+    toast.innerHTML = `<span>${type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'}</span> ${message}`;
+    container.appendChild(toast);
+    setTimeout(() => toast.remove(), 4000);
   }
 </script>
 </body>
