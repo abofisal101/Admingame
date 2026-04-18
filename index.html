@@ -48,13 +48,14 @@
     input[type="text"],input[type="password"],input[type="number"],select,textarea,input[type="file"]{width:100%;background:#0d0d0d;color:var(--text);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:12px 14px;font-family:inherit;font-size:15px;outline:none}
     textarea{min-height:110px;resize:vertical}
     .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
-    button{cursor:pointer;border:none;border-radius:14px;padding:12px 16px;font-family:inherit;font-weight:700;transition:.18s transform,.18s opacity,.18s background;touch-action:manipulation}
+    button{cursor:pointer;border:none;border-radius:14px;padding:12px 16px;font-family:inherit;font-weight:700;transition:.18s transform,.18s opacity;touch-action:manipulation}
     button:hover{transform:translateY(-1px)}
     .btn-primary{background:linear-gradient(135deg,var(--red),var(--red-2));color:#fff}
     .btn-secondary{background:#1e1e1e;color:#fff;border:1px solid rgba(255,255,255,.09)}
     .btn-danger{background:#5b1212;color:#fff}
     .btn-warning{background:#6a4b0c;color:#fff}
     .btn-ghost{background:transparent;color:#ddd;border:1px solid rgba(255,255,255,.12)}
+    .btn-info{background:#0f4c5f;color:#fff}
     .table-wrap{overflow:auto;border:1px solid var(--line);border-radius:18px;background:var(--panel)}
     table{width:100%;border-collapse:collapse;min-width:950px}
     th,td{padding:14px 12px;text-align:right;border-bottom:1px solid rgba(255,255,255,.06);font-size:14px}
@@ -76,6 +77,11 @@
     .message.error{background:rgba(255,45,45,.1);color:#ffc0c0;border:1px solid rgba(255,45,45,.25)}
     .message.info{background:rgba(255,176,32,.1);color:#ffdca0;border:1px solid rgba(255,176,32,.22)}
     .mini{font-size:12px;color:var(--muted)}
+    .room-details{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px;margin-top:16px}
+    .room-details h3{margin:0 0 12px;font-size:18px}
+    .room-players-list{max-height:200px;overflow-y:auto}
+    .room-player-item{display:flex;justify-content:space-between;padding:8px;border-bottom:1px solid rgba(255,255,255,.05)}
+    .announcement-box{background:linear-gradient(135deg,rgba(255,45,45,.15),rgba(182,13,13,.1));border:2px solid var(--red);border-radius:18px;padding:16px;margin-bottom:16px}
     @media (max-width:1100px){
       .controls,.stats,.two-col{grid-template-columns:1fr}
     }
@@ -117,6 +123,20 @@
       <div class="pill">Firebase Realtime Database • Legacy SDK 8.10.1</div>
     </div>
 
+    <!-- قسم الإعلان العلوي -->
+    <div class="card announcement-box">
+      <h2>📢 إعلان علوي تفاعلي</h2>
+      <div class="sub">إرسال رسالة فورية لجميع اللاعبين في غرفة محددة</div>
+      <div style="display:grid;gap:12px">
+        <select id="targetRoomSelect">
+          <option value="all">جميع الغرف</option>
+        </select>
+        <textarea id="announcementText" placeholder="اكتب الرسالة التي تريد إرسالها للاعبين..." rows="3"></textarea>
+        <button class="btn-info" id="sendAnnouncementBtn">إرسال الإعلان</button>
+        <div id="announcementMsg" class="message"></div>
+      </div>
+    </div>
+
     <div class="card">
       <h2>الإحصائيات الحية</h2>
       <div class="stats">
@@ -133,9 +153,9 @@
         <div class="sub">تعديل القيم التالية ثم تطبيقها فوراً على settings/live وعلى جميع الغرف النشطة.</div>
         <div class="controls">
           <div class="control-box">
-            <div class="range-row"><label>عدد الجولات</label><strong id="roundsValue">5</strong></div>
-            <input type="range" id="roundsSlider" min="1" max="20" value="5">
-            <div class="mini">يتزامن تلقائياً مع واجهات اللاعبين.</div>
+            <div class="range-row"><label>عدد الجولات (10 - 30)</label><strong id="roundsValue">10</strong></div>
+            <input type="range" id="roundsSlider" min="10" max="30" value="10">
+            <div class="mini">يتزامن تلقائياً مع واجهات اللاعبين. أقل عدد 10، أعلى عدد 30.</div>
           </div>
           <div class="control-box">
             <div class="range-row"><label>وقت التفكير</label><strong id="thinkValue">15 ث</strong></div>
@@ -167,15 +187,23 @@
                 <th>نوع الجهاز</th>
                 <th>الغرفة الحالية</th>
                 <th>الحالة</th>
+                <th>النتيجة</th>
                 <th>آخر ظهور</th>
                 <th>إجراءات</th>
               </tr>
             </thead>
             <tbody id="playersBody">
-              <tr><td colspan="7" class="muted">جاري تحميل اللاعبين...</td></tr>
+              <tr><td colspan="8" class="muted">جاري تحميل اللاعبين...</td></tr>
             </tbody>
           </table>
         </div>
+      </section>
+
+      <!-- تفاصيل الغرف -->
+      <section class="card">
+        <h2>تفاصيل الغرف واللاعبين</h2>
+        <div class="sub">عرض جميع الغرف النشطة وأسماء اللاعبين داخلها</div>
+        <div id="roomsDetails"></div>
       </section>
 
       <section class="card">
@@ -235,7 +263,7 @@
 
     const el = id => document.getElementById(id);
     const state = {
-      settings: { rounds: 5, thinkTime: 15, answerTime: 7 },
+      settings: { rounds: 10, thinkTime: 15, answerTime: 7 },
       players: {},
       rooms: {},
       banned: {}
@@ -243,8 +271,10 @@
 
     function showMessage(target, text, type) {
       const box = el(target);
-      box.className = 'message show ' + (type || 'info');
-      box.textContent = text;
+      if(box){
+        box.className = 'message show ' + (type || 'info');
+        box.textContent = text;
+      }
     }
 
     function hideOverlayIfLogged() {
@@ -269,16 +299,16 @@
     }
 
     function updateSliderViews() {
-      el('roundsValue').textContent = el('roundsSlider').value;
-      el('thinkValue').textContent = el('thinkSlider').value + ' ث';
-      el('answerValue').textContent = el('answerSlider').value + ' ث';
+      if(el('roundsValue')) el('roundsValue').textContent = el('roundsSlider').value;
+      if(el('thinkValue')) el('thinkValue').textContent = el('thinkSlider').value + ' ث';
+      if(el('answerValue')) el('answerValue').textContent = el('answerSlider').value + ' ث';
     }
 
     function renderPlayers() {
       const body = el('playersBody');
       const entries = Object.keys(state.players || {});
       if (!entries.length) {
-        body.innerHTML = '<tr><td colspan="7" class="muted">لا يوجد لاعبون بعد.</td></tr>';
+        if(body) body.innerHTML = '<tr><td colspan="8" class="muted">لا يوجد لاعبون بعد.</td></tr>';
         return;
       }
       body.innerHTML = entries.map(function(id){
@@ -291,15 +321,58 @@
             <td>${deviceLabel(p.deviceType)}</td>
             <td>${p.room || '—'}</td>
             <td><span class="tag ${status}">${status === 'online' ? 'متصل' : 'غير متصل'}</span></td>
+            <td>${p.score || 0}</td>
             <td>${formatTime(p.lastSeen)}</td>
             <td>
               <div style="display:flex;gap:8px;flex-wrap:wrap">
                 <button class="btn-warning" onclick="kickPlayer('${id}','${p.room || ''}')">طرد</button>
                 <button class="btn-danger" onclick="banPlayer('${id}')">حظر</button>
               </div>
-            </td>
+             </td>
           </tr>`;
       }).join('');
+    }
+
+    function renderRoomsDetails() {
+      const container = el('roomsDetails');
+      if(!container) return;
+      const roomsList = state.rooms || {};
+      const roomEntries = Object.entries(roomsList).filter(([_, data]) => data.players && Object.keys(data.players).length > 0);
+      
+      if(roomEntries.length === 0){
+        container.innerHTML = '<div class="room-details"><div class="sub">لا توجد غرف نشطة حالياً</div></div>';
+        return;
+      }
+      
+      container.innerHTML = roomEntries.map(([roomId, roomData]) => {
+        const players = roomData.players || {};
+        const playersList = Object.entries(players).map(([pid, pData]) => `
+          <div class="room-player-item">
+            <span>👤 ${pData.name || 'لاعب'}</span>
+            <span>⭐ ${pData.score || 0} نقطة</span>
+          </div>
+        `).join('');
+        
+        return `
+          <div class="room-details">
+            <h3>🏠 الغرفة: ${roomId} <span style="font-size:14px">(${Object.keys(players).length} لاعب)</span></h3>
+            <div class="room-players-list">
+              ${playersList || '<div class="sub">لا يوجد لاعبون</div>'}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function updateRoomSelect() {
+      const select = el('targetRoomSelect');
+      if(!select) return;
+      const roomsList = state.rooms || {};
+      const roomOptions = ['<option value="all">🌐 جميع الغرف</option>'];
+      Object.keys(roomsList).forEach(roomId => {
+        roomOptions.push(`<option value="${roomId}">🏠 ${roomId}</option>`);
+      });
+      select.innerHTML = roomOptions.join('');
     }
 
     function recalcStats() {
@@ -307,25 +380,25 @@
       const players = Object.values(state.players || {});
       const online = players.filter(p => p.status === 'online').length;
       const rooms = Object.values(state.rooms || {}).filter(function(r){ return r && r.players && Object.keys(r.players).length > 0; }).length;
-      el('totalQuestions').textContent = questionsCount;
-      el('onlinePlayers').textContent = online;
-      el('activeRooms').textContent = rooms;
-      el('bannedCount').textContent = Object.keys(state.banned || {}).length;
+      if(el('totalQuestions')) el('totalQuestions').textContent = questionsCount;
+      if(el('onlinePlayers')) el('onlinePlayers').textContent = online;
+      if(el('activeRooms')) el('activeRooms').textContent = rooms;
+      if(el('bannedCount')) el('bannedCount').textContent = Object.keys(state.banned || {}).length;
     }
 
     function syncControlsFromSettings(s) {
       const live = (s && s.live) || s || {};
-      state.settings.rounds = Number(live.rounds || s.rounds || 5);
+      state.settings.rounds = Math.min(30, Math.max(10, Number(live.rounds || s.rounds || 10)));
       state.settings.thinkTime = Number(live.thinkTime || s.thinkTime || 15);
       state.settings.answerTime = Number(live.answerTime || s.answerTime || 7);
-      el('roundsSlider').value = state.settings.rounds;
-      el('thinkSlider').value = state.settings.thinkTime;
-      el('answerSlider').value = state.settings.answerTime;
+      if(el('roundsSlider')) el('roundsSlider').value = state.settings.rounds;
+      if(el('thinkSlider')) el('thinkSlider').value = state.settings.thinkTime;
+      if(el('answerSlider')) el('answerSlider').value = state.settings.answerTime;
       updateSliderViews();
     }
 
     function applyLiveSettings() {
-      const rounds = Number(el('roundsSlider').value);
+      const rounds = Math.min(30, Math.max(10, Number(el('roundsSlider').value)));
       const thinkTime = Number(el('thinkSlider').value);
       const answerTime = Number(el('answerSlider').value);
       const timestamp = firebase.database.ServerValue.TIMESTAMP;
@@ -348,6 +421,48 @@
       db.ref().update(updates)
         .then(function(){ showMessage('settingsMsg', 'تم تطبيق الإعدادات الحية على settings/live وعلى الغرف النشطة.', 'success'); })
         .catch(function(err){ showMessage('settingsMsg', err.message, 'error'); });
+    }
+
+    function sendAnnouncement() {
+      const targetRoom = el('targetRoomSelect').value;
+      const message = el('announcementText').value.trim();
+      
+      if(!message){
+        showMessage('announcementMsg', 'الرجاء كتابة رسالة الإعلان أولاً', 'error');
+        return;
+      }
+      
+      const announcementData = {
+        message: message,
+        targetRoom: targetRoom,
+        sentBy: 'admin',
+        sentAt: firebase.database.ServerValue.TIMESTAMP
+      };
+      
+      if(targetRoom === 'all'){
+        // إرسال لجميع الغرف
+        const rooms = Object.keys(state.rooms || {});
+        if(rooms.length === 0){
+          showMessage('announcementMsg', 'لا توجد غرف نشطة لإرسال الإعلان', 'error');
+          return;
+        }
+        const updates = {};
+        rooms.forEach(roomId => {
+          updates['announcements/rooms/' + roomId + '/' + Date.now()] = announcementData;
+          updates['announcements/latest'] = {...announcementData, targetRoom: roomId};
+        });
+        db.ref().update(updates).then(() => {
+          showMessage('announcementMsg', 'تم إرسال الإعلان لجميع الغرف بنجاح', 'success');
+          el('announcementText').value = '';
+        }).catch(err => showMessage('announcementMsg', err.message, 'error'));
+      } else {
+        // إرسال لغرفة محددة
+        db.ref('announcements/rooms/' + targetRoom + '/' + Date.now()).set(announcementData).then(() => {
+          db.ref('announcements/latest').set({...announcementData, targetRoom: targetRoom});
+          showMessage('announcementMsg', 'تم إرسال الإعلان للغرفة ' + targetRoom + ' بنجاح', 'success');
+          el('announcementText').value = '';
+        }).catch(err => showMessage('announcementMsg', err.message, 'error'));
+      }
     }
 
     function addQuestion() {
@@ -436,7 +551,12 @@
       db.ref('settings').on('value', function(snap){ syncControlsFromSettings(snap.val() || {}); });
       db.ref('players').on('value', function(snap){ state.players = snap.val() || {}; renderPlayers(); recalcStats(); });
       db.ref('questions').on('value', function(snap){ window.questionsCache = snap.val() || {}; recalcStats(); });
-      db.ref('rooms').on('value', function(snap){ state.rooms = snap.val() || {}; recalcStats(); });
+      db.ref('rooms').on('value', function(snap){ 
+        state.rooms = snap.val() || {}; 
+        recalcStats(); 
+        renderRoomsDetails();
+        updateRoomSelect();
+      });
       db.ref('banned').on('value', function(snap){ state.banned = snap.val() || {}; recalcStats(); });
     }
 
@@ -455,11 +575,14 @@
       });
     }
 
-    ['roundsSlider','thinkSlider','answerSlider'].forEach(function(id){ el(id).addEventListener('input', updateSliderViews); });
-    el('applySettingsBtn').addEventListener('click', applyLiveSettings);
-    el('reloadSettingsBtn').addEventListener('click', function(){ db.ref('settings').once('value').then(function(snap){ syncControlsFromSettings(snap.val() || {}); showMessage('settingsMsg', 'تمت مزامنة القيم من قاعدة البيانات.', 'info'); }); });
-    el('addQuestionBtn').addEventListener('click', addQuestion);
-    el('importBtn').addEventListener('click', importQuestions);
+    if(el('roundsSlider')) el('roundsSlider').addEventListener('input', updateSliderViews);
+    if(el('thinkSlider')) el('thinkSlider').addEventListener('input', updateSliderViews);
+    if(el('answerSlider')) el('answerSlider').addEventListener('input', updateSliderViews);
+    if(el('applySettingsBtn')) el('applySettingsBtn').addEventListener('click', applyLiveSettings);
+    if(el('reloadSettingsBtn')) el('reloadSettingsBtn').addEventListener('click', function(){ db.ref('settings').once('value').then(function(snap){ syncControlsFromSettings(snap.val() || {}); showMessage('settingsMsg', 'تمت مزامنة القيم من قاعدة البيانات.', 'info'); }); });
+    if(el('addQuestionBtn')) el('addQuestionBtn').addEventListener('click', addQuestion);
+    if(el('importBtn')) el('importBtn').addEventListener('click', importQuestions);
+    if(el('sendAnnouncementBtn')) el('sendAnnouncementBtn').addEventListener('click', sendAnnouncement);
 
     updateSliderViews();
     initLogin();
